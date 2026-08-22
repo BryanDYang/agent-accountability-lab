@@ -1,0 +1,22 @@
+# LLM agent with persistent memory
+agent:
+  type: memory_agent
+  description: "LLM agent with episodic and semantic memory."
+  llm:
+    provider: openai          # override with env var LLM_PROVIDER
+    model: gpt-4o-mini
+
+environment:
+  type: gridworld
+  size: 10
+  max_steps: 500
+  seed: 42
+
+memory:
+  episodic: true
+  semantic: true
+  vector_store: chroma
+
+logging:
+  level: INFO
+  output_dir: experiments/results/memory_agent

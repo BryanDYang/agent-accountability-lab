@@ -1,0 +1,14 @@
+# Baseline agent – reactive, no memory
+agent:
+  type: baseline
+  description: "Rule-based reactive agent with no memory or LLM."
+
+environment:
+  type: gridworld
+  size: 10
+  max_steps: 200
+  seed: 42
+
+logging:
+  level: INFO
+  output_dir: experiments/results/baseline

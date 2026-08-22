@@ -2,7 +2,7 @@
   "mcpServers": {
     "bob-marketplace": {
       "type": "streamable-http",
-      "url": "http://127.0.0.1:59121/mcp",
+      "url": "http://127.0.0.1:50249/mcp",
       "headers": {
         "Bob-Marketplace-Token": "bob-marketplace-local"
       },
