@@ -34,40 +34,26 @@ agent-accountability-lab/
 
 ## Quick Start
 
-### 1. Clone and set up
-
 ```bash
+# 1. Clone
 git clone https://github.com/YOUR_ORG/agent-accountability-lab.git
 cd agent-accountability-lab
+
+# 2. Create a virtual environment and install
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-```
 
-### 2. Configure environment variables
+# 3. Configure secrets
+cp .env.example .env   # then edit .env with your API keys
 
-```bash
-cp .env.example .env
-# Edit .env and add your API keys
-```
+# 4. Verify
+pytest
 
-### 3. Run an experiment
-
-```bash
+# 5. Run your first experiment
 python experiments/run_experiment.py --config configs/baseline.yaml
 ```
 
-### 4. Run tests
-
-```bash
-pytest
-```
-
-### 5. Lint and format
-
-```bash
-ruff check .
-ruff format .
-```
+For the full walkthrough — prerequisites, expected output, and next steps — see [`docs/quickstart.md`](docs/quickstart.md).
 
 ## CI
 
@@ -81,6 +67,10 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 | [`docs/proposal.md`](docs/proposal.md) | Research questions and goals |
 | [`docs/architecture.md`](docs/architecture.md) | System design and module map |
 | [`docs/evaluation_plan.md`](docs/evaluation_plan.md) | Evaluation methodology and metrics |
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the branching strategy, coding standards, testing expectations, and PR process.
 
 ## License
 

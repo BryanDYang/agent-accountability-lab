@@ -10,7 +10,7 @@ This project explores how long-lived autonomous AI agents can remain explainable
 
 ## Why Simulation First
 
-The simulation environment is not the main novelty by itself. It is the controlled testbed for studying agent behavior. Starting with simulation allows fast iteration, repeatable experiments, and easier debugging before connecting the architecture to physical hardware.
+The simulation environment is not the main novelty by itself. It is the controlled testbed for studying agent behavior. Starting with  simulation allows fast iteration, repeatable experiments, and easier debugging before connecting the architecture to physical hardware.
 
 The project can begin with a simple grid-world or MiniGrid-style environment before moving to more complex simulation tools such as MuJoCo, Habitat, Isaac Sim, or a robotics platform later.
 
