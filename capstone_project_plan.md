@@ -1,418 +1,254 @@
-# Capstone Project Plan: Accountable Embodied Agents
+# Capstone Project Plan: Accountable Agents
 
 ## Working Title
 
-**Digital Twin Environment for Evaluating Accountability, Memory, and Behavioral Drift in Autonomous AI Agents**
+**Trajectory-Level Detection of Memory-Induced Behavioral Drift in Persistent AI Agents**
 
-## Core Idea
+## Track and Focus
 
-This project explores how long-lived autonomous AI agents can remain explainable, auditable, and accountable as they accumulate memories, pursue goals, and adapt behavior over time. The initial implementation will use a simulated environment instead of physical robotics so that the project can be built and evaluated within a 14-week capstone timeline. The longer-term direction is to extend the same agent architecture to embodied robotics, where agents may operate continuously for days or weeks rather than short isolated sessions.
+- **Course track:** Research-Driven
+- **Primary focus:** Evaluation and Responsible AI
+- **Supporting focus:** Model and System
+- **Primary readers:** Engineers and researchers responsible for evaluating, monitoring, or operating persistent AI agents
 
-## Why Simulation First
+## Project Summary
 
-The simulation environment is not the main novelty by itself. It is the controlled testbed for studying agent behavior. Starting with  simulation allows fast iteration, repeatable experiments, and easier debugging before connecting the architecture to physical hardware.
+This project will build an evaluation framework for detecting and diagnosing deliberately induced behavioral drift in a persistent, memory-augmented AI agent.
 
-The project can begin with a simple grid-world or MiniGrid-style environment before moving to more complex simulation tools such as MuJoCo, Habitat, Isaac Sim, or a robotics platform later.
+A deterministic grid world will serve as a controlled experimental testbed. The project will compare normal and drifted agent trajectories under fixed seeds, known intervention times, and known intervention causes. The central contribution is the trajectory schema, controlled-drift protocol, detection evaluation, and investigation workflow—not the simulator or a general-purpose agent architecture.
 
-## Project Objective
+The broader research direction remains accountable embodied agents. More complex simulation and physical robotics are explicitly future work.
 
-Build a working software system where an autonomous agent can:
+## Research Question
 
-- Observe a simulated environment
-- Maintain short-term and long-term memory
-- Select and prioritize goals
-- Plan and execute actions
-- Record why it took each action
-- Generate decision traces and explanations
-- Detect changes in behavior over time
-
-## Key Research Question
-
-Can long-lived autonomous agents remain accountable as their memory, goals, and behavior evolve over time?
+**Can structured trajectory evidence detect and diagnose deliberately induced, memory-driven behavioral drift in a persistent AI agent?**
 
 Supporting questions:
 
-- Can an external observer reconstruct why the agent took a specific action?
-- Which memories influenced the agent's decisions?
-- Does the agent's behavior drift over long runs?
-- Can drift be detected before it causes undesirable outcomes?
-- Does accountability improve transparency without significantly reducing task performance?
+- How accurately can a detector distinguish normal behavioral variation from an induced change?
+- How quickly after an intervention can the change be detected?
+- Can recorded memory retrievals help identify the likely cause of the drift?
+- What task-performance, latency, and token-cost tradeoffs result from persistent memory and monitoring?
 
-## Proposed Architecture
+## Value Proposition
+
+Persistent agents can change behavior as their stored experiences and retrieval patterns evolve. Aggregate success metrics may show that performance changed without showing when the change began or what evidence influenced it. This project provides a reproducible way to inject known memory-related faults, observe complete decision trajectories, measure drift detection, and investigate likely causes.
+
+## Scope
+
+### Required
+
+- One deterministic custom grid world
+- One fixed task with at least one explicit behavioral or safety rule
+- One reactive, non-memory baseline
+- One LLM agent with persistent episodic memory
+- JSONL or SQLite trajectory storage
+- Complete references from decisions to retrieved memory records
+- Two controlled drift interventions: memory poisoning and retrieval bias
+- One statistical drift detector; a second method is optional
+- Seeded, repeatable experiment commands
+- Quantitative evaluation and failure analysis
+- A compact replay and trace-inspection interface
+
+### Out of Scope
+
+- MuJoCo, Isaac Sim, Habitat, or physical robotics
+- Multiple simulation environments
+- Semantic and reflection memory hierarchies
+- Autonomous goal generation or competing-goal management
+- A general-purpose planning framework
+- Vector databases unless retrieval scale demonstrates a need
+- Five-way agent architecture comparisons
+- Reinforcement learning or model training
+- A large or polished multipage dashboard
+- Claims that generated explanations reveal the model's internal reasoning
+
+## Experimental System
 
 ```text
-Simulation Environment
-        ↓
-Observation Interface
-        ↓
-Agent Brain
-  - LLM Reasoning
-  - Memory Retrieval
-  - Goal Selection
-  - Planning
-        ↓
-Action Executor
-        ↓
-Environment Update
-        ↓
-Accountability Logger
-        ↓
-Evaluation + Visualization Dashboard
+Deterministic Grid World
+        |
+        v
+Agent: reactive baseline or LLM + episodic memory
+        |
+        v
+Structured Decision/Event Trace
+        |
+        +--> Drift Detector
+        +--> Metrics and Evaluation
+        +--> Replay and Investigation View
 ```
 
-## Milestone-Based Development Plan
+For every decision, the trace should capture observable evidence:
 
-### Milestone 0: Repository and Project Skeleton
+- Environment and episode identifiers
+- Seed, step, timestamp, and experimental condition
+- Agent observation and available actions
+- Retrieved memory IDs and retrieval scores
+- Selected action and applicable task or policy constraint
+- Environment outcome, reward, and rule violations
 
-Goal: Establish a clean engineering foundation.
+Generated explanations may be stored as annotations, but they will not be treated as proof of the model's true reasoning.
+
+## Experimental Conditions
+
+1. Reactive baseline without persistent memory
+2. Memory-enabled agent without an intervention
+3. Memory-enabled agent with memory poisoning
+4. Memory-enabled agent with retrieval bias
+
+### Controlled Drift Interventions
+
+**Memory poisoning:** At a defined episode, insert misleading experience records that suggest an unsafe or ineffective shortcut succeeds.
+
+**Retrieval bias:** At a defined episode, alter retrieval weighting so misleading, outdated, or recent memories become disproportionately likely to influence decisions.
+
+Every intervention has a known type and start time, providing ground truth for detection and attribution.
+
+## Evaluation
+
+### Primary Metrics
+
+- Drift-detection precision, recall, and F1
+- Detection delay after the intervention
+- Root-cause attribution accuracy
+- Rule-violation rate
+- Task-completion rate
+
+### Secondary Engineering Metrics
+
+- Percentage of actions with complete trace evidence
+- Average latency per decision
+- Input and output tokens per episode
+- Estimated API cost per episode
+
+### Reader-Impact Evaluation
+
+Given a sample of normal and drifted runs, measure an evaluator's accuracy identifying the responsible intervention, time to diagnosis, and confidence. If a formal reviewer study is infeasible, root-cause attribution against intervention ground truth will be the documented fallback.
+
+## Course-Aligned Milestones
+
+### Milestone 1 — Proposal, Scope, and Experimental Design (Weeks 1–2)
 
 Deliverables:
 
-- GitHub repository
-- Python project structure
-- README
-- Basic simulation runner
-- Configuration files
-- Experiment logging folder
-
-Success criteria:
-
-- Project runs locally with one command
-- Simple environment can reset and step forward
-
----
-
-### Milestone 1: Minimal Simulation Environment
-
-Goal: Create the simplest possible testbed.
-
-Environment options:
-
-- Custom Python grid world
-- MiniGrid
-- Gymnasium environment
-
-Initial entities:
-
-- Agent
-- Food/resource
-- Charging station
-- Obstacles
-- Goal location
-
-Success criteria:
-
-- Agent can observe the environment
-- Environment accepts actions
-- State changes are logged
-
----
-
-### Milestone 2: Basic LLM Agent Loop
-
-Goal: Add a simple autonomous agent.
-
-Core loop:
-
-```python
-observation = env.observe()
-decision = agent.think(observation)
-action = agent.choose_action(decision)
-env.step(action)
-```
-
-Success criteria:
-
-- Agent can complete a simple task
-- Agent actions are valid
-- Basic reasoning output is captured
-
----
-
-### Milestone 3: Persistent Memory
-
-Goal: Give the agent memory across steps and episodes.
-
-Memory types:
-
-- Episodic memory: what happened before
-- Semantic memory: learned facts about the world
-- Reflection memory: lessons learned from prior outcomes
-
-Possible implementation:
-
-- SQLite or JSONL for early version
-- Vector store such as Chroma or FAISS for retrieval
-
-Success criteria:
-
-- Agent can retrieve relevant past experiences
-- Agent behavior changes based on memory
-- Memory references are logged per action
-
----
-
-### Milestone 4: Goal Management and Planning
-
-Goal: Allow the agent to reason over competing goals.
-
-Example goals:
-
-- Maintain energy
-- Explore the environment
-- Collect resources
-- Avoid obstacles
-- Complete assigned tasks
-
-Success criteria:
-
-- Agent selects goals explicitly
-- Goal selection is logged
-- Agent can balance competing priorities
-
----
-
-### Milestone 5: Accountability Layer
-
-Goal: Make agent decisions explainable and auditable.
-
-For each significant action, log:
-
-- Observation
-- Retrieved memories
-- Active goal
-- Candidate plans
-- Final action
-- Explanation
-- Outcome
-
-Success criteria:
-
-- A human reviewer can reconstruct why an action was taken
-- The system can generate a readable decision trace
-- Logs are structured enough for evaluation
-
----
-
-### Milestone 6: Long-Horizon Runs
-
-Goal: Run the agent for hundreds or thousands of steps.
-
-Measure:
-
-- Task success
-- Survival/resource maintenance
-- Repeated failures
-- Memory growth
-- Goal changes
-- Behavior patterns
-
-Success criteria:
-
-- Agent can operate over long simulations
-- Behavior can be replayed and analyzed
-- Failure modes become visible
-
----
-
-### Milestone 7: Behavioral Drift Detection
-
-Goal: Detect when agent behavior changes meaningfully over time.
-
-Possible drift signals:
-
-- Change in action distribution
-- Change in goal priority
-- Increased rule violations
-- Repeated avoidance of important tasks
-- Decreased task completion rate
-- Changes in explanation patterns
-
-Success criteria:
-
-- Drift score can be computed
-- Drift events can be visualized
-- System can explain likely causes of drift
-
----
-
-### Milestone 8: Evaluation Harness
-
-Goal: Compare different agent designs.
-
-Example variants:
-
-- Baseline reactive agent
-- LLM-only agent
-- LLM + memory
-- LLM + memory + reflection
-- LLM + memory + accountability layer
-
-Evaluation dimensions:
-
-- Task completion
-- Consistency
-- Explainability
-- Auditability
-- Drift detection
-- Latency/cost
-
-Success criteria:
-
-- Repeatable experiments
-- Results table
-- Clear comparison between approaches
-
----
-
-### Milestone 9: Dashboard and Demo
-
-Goal: Create a polished capstone demo.
-
-Dashboard views:
-
-- Environment replay
-- Agent action timeline
-- Memory timeline
-- Goal evolution
-- Decision trace viewer
-- Drift detection report
-
-Success criteria:
-
-- Demo tells a clear story
-- User can inspect why the agent acted
-- Final system is portfolio-ready
-
-## How Working With the Simulator Would Work
-
-The simulator should be treated as the agent's temporary body and world. The agent does not need to know whether it is controlling a grid-world character, a MuJoCo robot, or a real robot. It only needs a consistent interface.
-
-A clean interface could look like this:
-
-```python
-class Environment:
-    def reset(self):
-        pass
-
-    def observe(self):
-        pass
-
-    def step(self, action):
-        pass
-
-    def render(self):
-        pass
-```
-
-The agent receives observations and returns actions:
-
-```python
-observation = env.observe()
-action, trace = agent.act(observation)
-next_state, reward, done, info = env.step(action)
-logger.record(observation, action, trace, next_state)
-```
-
-This allows the same brain/accountability architecture to work across different embodiments:
-
-```text
-Simple Grid World → MiniGrid → MuJoCo → Physical Robot
-```
-
-The capstone should start with the simplest simulator that can support meaningful evaluation. MuJoCo can be a later milestone or stretch goal, not the starting dependency.
-
-## Recommended Repository Structure
-
-```text
-accountable-embodied-agents/
-├── README.md
-├── pyproject.toml
-├── .env.example
-├── configs/
-│   ├── baseline.yaml
-│   ├── memory_agent.yaml
-│   └── accountability_agent.yaml
-├── src/
-│   └── accountable_agents/
-│       ├── envs/
-│       │   ├── gridworld.py
-│       │   └── adapters.py
-│       ├── agents/
-│       │   ├── base.py
-│       │   ├── llm_agent.py
-│       │   └── memory_agent.py
-│       ├── memory/
-│       │   ├── episodic.py
-│       │   ├── semantic.py
-│       │   └── retrieval.py
-│       ├── planning/
-│       │   └── planner.py
-│       ├── accountability/
-│       │   ├── logger.py
-│       │   ├── traces.py
-│       │   └── explanations.py
-│       ├── evaluation/
-│       │   ├── metrics.py
-│       │   ├── drift.py
-│       │   └── experiments.py
-│       └── dashboard/
-│           └── app.py
-├── experiments/
-│   ├── run_experiment.py
-│   └── results/
-├── notebooks/
-├── tests/
-└── docs/
-    ├── proposal.md
-    ├── architecture.md
-    └── evaluation_plan.md
-```
+- Track declaration, problem statement, primary readers, and value proposition
+- Fixed MVP and explicit exclusions
+- Grid-world, agent, trajectory, and intervention specifications
+- Offline and reader-impact metrics
+- Initial architecture and 14-week timeline
+- Tech stack and compute/API budget
+- Risks, mitigations, and fallbacks
+- Licensing, safety, fairness, and privacy plan
+- Repository with README, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, and CI smoke test
+- Six-slide pitch deck or three-to-five-minute concept video
+
+Exit criteria:
+
+- Each experimental condition, intervention, and metric is defined before core implementation begins.
+- The repository installs and its smoke tests pass in CI.
+
+### Milestone 2 — Evaluation Harness and Baselines (Weeks 3–5)
+
+Deliverables:
+
+- Deterministic grid world and fixed task
+- Reactive baseline
+- Versioned trajectory/event schema
+- Seeded experiment runner
+- Drift-injection protocol with known intervention time and cause
+- Metric implementations and initial baseline results
+- Scenario/Data Card describing generated data and limitations
+- Mandatory TA check-in
+
+Exit criteria:
+
+- Repeated baseline runs are reproducible from one command.
+- The evaluation pipeline scores a synthetic or scripted drift fixture correctly.
+
+### Milestone 3 — End-to-End Alpha (Weeks 6–9)
+
+Deliverables:
+
+- LLM agent with persistent episodic memory
+- Memory poisoning and retrieval-bias interventions
+- Complete decision traces with memory provenance
+- At least one working drift detector
+- Root-cause attribution method
+- Basic replay and investigation interface
+- Initial repeated experiments
+- Model Card and System Card
+
+Exit criteria:
+
+- One command executes normal and drifted conditions and produces traces, metrics, and an inspectable run.
+- At least one induced drift scenario is detected above the declared baseline threshold.
+
+### Milestone 4 — Release Candidate and Documentation (Weeks 10–12)
+
+Deliverables:
+
+- Frozen feature set and repeated seeded experiments for both interventions
+- Final primary and secondary metrics
+- Failure and error analysis
+- Tests for schema validity, intervention timing, and metric correctness
+- Reproducible/containerized release candidate
+- Draft technical report, documentation, and short demo video
+- Mandatory TA check-in
+
+Exit criteria:
+
+- Results can be regenerated from documented commands.
+- Known limitations and failed cases are documented.
+- No required analysis depends on manual inspection alone.
+
+### Final Deliverable — Report and Showcase (Weeks 13–14)
+
+- Final technical report
+- Public reproducible repository
+- Final tables and figures
+- Replay/investigation demonstration
+- Live presentation
+- Documented limitations and future work
+
+## Definition of Done
+
+The capstone is complete when a documented command can:
+
+1. Run seeded normal and drifted experimental conditions.
+2. Introduce a named intervention at a known episode.
+3. Save complete trajectory evidence with memory references.
+4. Detect and timestamp the resulting behavioral change.
+5. Attribute the likely cause using recorded evidence.
+6. Produce quantitative metrics and a replayable investigation report.
 
 ## Initial Tech Stack
 
-Suggested starting stack:
+- Python 3.11+
+- Custom grid world or a minimal Gymnasium interface
+- OpenAI, Anthropic, or a local model behind a small provider interface
+- JSONL initially; SQLite if querying becomes cumbersome
+- Pandas and Matplotlib for analysis
+- Pytest for unit and integration tests
+- Streamlit only if it remains the fastest route to the compact inspection view
+- Docker as a Milestone 4 packaging task
 
-- Python
-- Gymnasium or custom grid world
-- OpenAI/Anthropic/local LLM API
-- SQLite or JSONL for logs
-- Chroma or FAISS for vector memory
-- Streamlit for dashboard
-- Pandas/Matplotlib for evaluation
-- Pytest for basic testing
+## Risks, Mitigations, and Fallbacks
 
-Optional later:
+| Risk | Mitigation | Fallback |
+|---|---|---|
+| LLM stochasticity obscures induced drift | Fixed seeds where supported, constrained actions, repeated runs, and a deterministic baseline | Use a scripted memory-enabled policy to validate the harness before evaluating the LLM agent |
+| Drift detector cannot separate task progress from drift | Compare aligned episode windows and use known intervention ground truth | Limit the detector to rule violations and action-distribution changes in one fixed scenario |
+| API cost or latency prevents sufficient repetitions | Cache outputs where valid, cap episode length, and estimate cost before large runs | Use a smaller or local model and reduce secondary conditions, not repetitions of the primary experiment |
 
-- MiniGrid
-- MuJoCo
-- LangGraph
-- Docker
-- FastAPI
+## Responsible AI Plan
 
-## Practical First Sprint
+- **Safety:** The project studies simulated failures only and will not connect the agent to external tools or physical actuators. Intervention code and unsafe shortcuts will be labeled as evaluation fixtures.
+- **Privacy:** Experiments use synthetic environment data. Prompts, traces, and responses will be retained only for reproducibility and will not contain personal data.
+- **Fairness:** Human demographic fairness is not directly implicated by the synthetic grid world. If reviewers participate, report sampling limitations and avoid claims that generalize beyond that group.
+- **Licensing:** Record licenses and usage constraints for the environment library, model/API, and released evaluation fixtures before Milestone 2.
+- **Accountability:** Record model versions, configurations, seeds, interventions, and trace-schema versions for every reported run.
 
-The first sprint should avoid complexity.
+## Future Work
 
-Build:
-
-1. A simple grid world
-2. A rule-based baseline agent
-3. An LLM agent that can choose from valid actions
-4. JSONL logging of every step
-5. A small replay script
-
-Do not start with MuJoCo, vector databases, or complex RL. The goal is to prove the loop works first.
-
-## Capstone Positioning
-
-This project is not primarily about building a robot or inventing a new neural network architecture. The contribution is the end-to-end AI engineering system for evaluating persistent autonomous agents:
-
-- Memory
-- Planning
-- Goal evolution
-- Accountability
-- Behavioral drift
-- Evaluation
-
-The simulator is the experimental testbed. The long-term vision is embodied AI and robotics.
+After the capstone, the framework could expand to richer memory architectures, additional drift causes, MiniGrid or robotics simulators, human-in-the-loop intervention, and eventually physical embodied agents. These extensions are not dependencies for capstone completion.
