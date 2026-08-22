@@ -1,7 +1,9 @@
-"""Experiment runner – placeholder for Milestone 0."""
+"""Experiment runner – placeholder for Milestone 2."""
+
 import argparse
-import yaml
 from pathlib import Path
+
+import yaml
 
 
 def load_config(path: str) -> dict:
