@@ -1,6 +1,6 @@
 # agent-accountability-lab
 
-> **Digital Twin Environment for Evaluating Accountability, Memory, and Behavioral Drift in Autonomous AI Agents**
+> **Trajectory-level detection of memory-induced behavioral drift in persistent AI agents**
 
 [![CI](https://github.com/YOUR_ORG/agent-accountability-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/agent-accountability-lab/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -8,27 +8,22 @@
 
 ## Overview
 
-This project explores how long-lived autonomous AI agents can remain **explainable, auditable, and accountable** as they accumulate memories, pursue goals, and adapt behavior over time. The initial implementation uses a simulated environment as a controlled testbed before extending the architecture to embodied robotics.
+This research-driven capstone builds a reproducible framework for detecting and diagnosing deliberately induced behavioral drift in a persistent, memory-augmented AI agent. A deterministic grid world provides the controlled testbed; the primary contribution is the trajectory evidence, drift-injection protocol, quantitative evaluation, and investigation workflow.
 
-See [`capstone_project_plan.md`](capstone_project_plan.md) for the full milestone roadmap.
+The minimum experiment compares a reactive baseline, a memory-enabled control agent, and two controlled drift conditions: **memory poisoning** and **retrieval bias**. More complex memory, autonomous goal management, robotics simulation, and physical embodiment are future work.
+
+See [`capstone_project_plan.md`](capstone_project_plan.md) for the course-aligned milestone roadmap and [`docs/evaluation_plan.md`](docs/evaluation_plan.md) for the experiment protocol.
 
 ## Repository Structure
 
 ```
 agent-accountability-lab/
-├── src/accountable_agents/   # Python package
-│   ├── envs/                 # Simulation environments and adapters
-│   ├── agents/               # Baseline, LLM, and memory agents
-│   ├── memory/               # Episodic, semantic, retrieval
-│   ├── planning/             # Goal management and planner
-│   ├── accountability/       # Logger, traces, explanations
-│   ├── evaluation/           # Metrics and drift detection
-│   └── dashboard/            # Streamlit visualisation app
-├── configs/                  # Per-experiment YAML configs
-├── experiments/              # Experiment runner + results (gitignored)
-├── tests/                    # Pytest test suite
-├── docs/                     # Proposal, architecture, evaluation plan
-├── pyproject.toml            # Project metadata and dev dependencies
+├── src/accountable_agents/   # Environment, agents, memory, traces, and evaluation
+├── configs/                  # Reproducible experimental conditions
+├── experiments/              # Experiment runner and generated results
+├── tests/                    # Unit, schema, metric, and integration tests
+├── docs/                     # Proposal, architecture, and evaluation protocol
+├── pyproject.toml            # Project metadata and dependencies
 └── .env.example              # Environment variable template
 ```
 
@@ -49,9 +44,11 @@ cp .env.example .env   # then edit .env with your API keys
 # 4. Verify
 pytest
 
-# 5. Run your first experiment
+# 5. Run the baseline experiment
 python experiments/run_experiment.py --config configs/baseline.yaml
 ```
+
+The experiment runner is currently a scaffold. Milestone 2 will make the baseline command deterministic and produce versioned trajectory records and metrics.
 
 For the full walkthrough — prerequisites, expected output, and next steps — see [`docs/quickstart.md`](docs/quickstart.md).
 
@@ -64,9 +61,9 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 | Document | Description |
 |---|---|
-| [`docs/proposal.md`](docs/proposal.md) | Research questions and goals |
+| [`docs/proposal.md`](docs/proposal.md) | Track declaration, research question, MVP, and risks |
 | [`docs/architecture.md`](docs/architecture.md) | System design and module map |
-| [`docs/evaluation_plan.md`](docs/evaluation_plan.md) | Evaluation methodology and metrics |
+| [`docs/evaluation_plan.md`](docs/evaluation_plan.md) | Conditions, interventions, metrics, and experiment protocol |
 
 ## Contributing
 
