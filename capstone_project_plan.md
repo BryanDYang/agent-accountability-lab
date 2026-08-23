@@ -1,20 +1,131 @@
 # Capstone Project Plan: Accountable Memory Gateway
 
-## Working Title
+## 1. The Idea in One Sentence
 
-**Accountable Memory Gateway for Persistent AI Agents**
+**Before an AI agent uses a stored memory, this project checks whether that memory is still valid, trusted, and safe.**
 
-## Track and Focus
+## 2. Why This Is Needed
 
+Some AI agents remember information from earlier tasks.
+
+That is useful, but a remembered instruction may later become wrong. It may be old, come from an untrusted source, conflict with a safety rule, or have been replaced by a newer instruction.
+
+If the agent uses that bad memory, it may make a bad decision.
+
+## 3. A Simple Example
+
+Imagine an AI agent moving through a map:
+
+1. The agent learns: **"Zone 7 is a shortcut."**
+2. Later, a safety operator says: **"Zone 7 is now dangerous. Do not enter it."**
+3. The agent asks its memory system for information about Zone 7.
+4. A normal memory search may return the old shortcut because it is relevant.
+5. The agent may enter Zone 7 and violate the new safety instruction.
+
+The problem is not that the memory search failed. It found a relevant memory. The problem is that **relevance alone does not tell the agent whether a memory should still be used**.
+
+## 4. What This Project Does
+
+This project adds a checkpoint between the agent's stored memories and the AI model.
+
+The checkpoint asks:
+
+- Is this memory still active?
+- Has it expired?
+- Did a newer memory replace it?
+- Who provided it?
+- Does it conflict with a higher-priority safety instruction?
+
+In the Zone 7 example, it blocks the old shortcut and gives the model the current safety instruction. It also records why it made that decision.
+
+This checkpoint is called the **Accountable Memory Gateway**.
+
+## 5. How It Is Different
+
+A typical memory system asks:
+
+> Which stored information is most relevant?
+
+This project asks two questions:
+
+> Which stored information is most relevant?
+>
+> Which of that information is allowed to enter the AI model's prompt?
+
+| Typical agent memory | Accountable Memory Gateway |
+|---|---|
+| Finds relevant memories | Finds relevant memories and checks them |
+| May return old and new instructions together | Blocks instructions replaced by newer ones |
+| Usually treats sources similarly | Gives trusted sources more authority |
+| Shows what was retrieved | Shows what was allowed, blocked, and why |
+| Has no consistent correction process | Lets an operator invalidate or replace a memory |
+
+This is not a new chatbot or a new memory database. It is a **control layer for AI applications that already use persistent memory**.
+
+## 6. What Will Be Built
+
+The capstone will contain four parts:
+
+1. **AI agent:** Receives a goal and chooses what to do next.
+2. **Grid world:** A small map where the agent completes a task and can encounter hazards.
+3. **Memory store:** Holds the agent's previous observations and instructions.
+4. **Memory gateway:** Checks memories before adding them to the model's prompt.
+
+```text
+Agent needs to decide what to do
+                |
+                v
+      Find relevant memories
+                |
+                v
+ Check which memories may be used
+                |
+                v
+ Give approved memories to the AI model
+                |
+                v
+   Agent acts and outcome is recorded
+```
+
+## 7. What the Demo Will Show
+
+The same agent will run the same tasks in two modes:
+
+1. **Without the gateway:** Relevant memories go directly into the model's prompt.
+2. **With the gateway:** Relevant memories are checked before entering the prompt.
+
+The demo will test four common failures:
+
+- A malicious or low-trust memory
+- An expired memory
+- A memory that conflicts with a safety rule
+- An old instruction replaced by a correction
+
+A small inspection screen will show:
+
+- Which memories were found
+- Which were allowed or blocked
+- Why each decision was made
+- What the model received
+- What action the agent took
+- Whether the action was safe and successful
+
+The evaluation will answer a simple question: **Does checking memory before use reduce unsafe actions while still allowing the agent to complete its task?**
+
+## 8. Project Details
+
+- **Working title:** Accountable Memory Gateway for Persistent AI Agents
 - **Course track:** AI Engineering
 - **Primary focus:** Model and System
 - **Secondary focus:** Evaluation and Responsible AI
 - **Supporting focus:** Application and Deployment
-- **Primary users:** Engineers building persistent, memory-augmented, or tool-using AI agents
+- **Primary users:** Engineers building AI agents that retain memory between tasks
 
-## Project Summary
+The sections below provide the lower-level technical design, evaluation plan, implementation scope, and delivery schedule.
 
-This project will build a runnable middleware layer that governs which persistent memories may enter an AI agent's working context. Instead of selecting memories by relevance alone, the gateway will consider provenance, authority, validity, supersession, and safety priority. It will also produce an auditable record connecting each memory candidate to its governance decision, context insertion, subsequent agent action, and environment outcome.
+## 9. Technical Project Summary
+
+This project will build a runnable layer that checks persistent memories before placing them in an AI agent's prompt. Instead of selecting memories by relevance alone, the gateway will also consider source, authority, validity, replacement, and safety priority. It will record which memories were considered, which were allowed or blocked, why each decision was made, what action the agent took, and what happened next.
 
 A deterministic grid world will serve as the end-to-end demonstration client. Controlled memory-failure scenarios will validate the gateway against a relevance-only retrieval baseline. The primary contribution is the engineered gateway, integration contract, audit trail, operator correction workflow, and deployable demonstration. Evaluation demonstrates product value but is not the sole deliverable.
 
