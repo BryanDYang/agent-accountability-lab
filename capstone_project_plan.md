@@ -1,480 +1,347 @@
-# Capstone Project Plan: Accountable Memory Gateway
+# Capstone Project Plan: Agent Memory Incident Lab
 
 ## 1. The Idea in One Sentence
 
-**Before an AI agent uses a stored memory, this project checks whether that memory is still valid, trusted, and safe.**
+**Build a developer toolkit that shows when an AI application used a bad memory, lets an operator correct it once, finds other outputs affected by it, and verifies the fix by replaying those cases.**
 
-## 2. Why This Is Needed
+## 2. The Problem
 
-Some AI agents remember information from earlier tasks.
+Long-running AI applications remember information from conversations, tools, databases, and operators. Those memories can later become outdated, conflict with a current system of record, come from an untrusted source, or be replaced by a newer instruction.
 
-That is useful, but a remembered instruction may later become wrong. It may be old, come from an untrusted source, conflict with a safety rule, or have been replaced by a newer instruction.
+Most memory systems optimize retrieval for relevance. A relevant memory is not necessarily a memory the application should still trust. If a bad memory enters an LLM's prompt, the application may produce an incorrect answer or take an incorrect action. Afterward, developers often lack a direct way to determine which memory was used, correct it consistently, identify other affected outputs, or prove that the correction works.
 
-If the agent uses that bad memory, it may make a bad decision.
+## 3. A Real Product Example
 
-## 3. A Simple Example
+Consider an AI customer-support agent connected to customer records and company policies:
 
-Imagine an AI agent moving through a map:
+1. The company changes its refund window from 30 days to 14 days.
+2. The agent still retains an old conversation memory stating that refunds are allowed for 30 days.
+3. A customer requests a refund after 20 days.
+4. The old policy is relevant to the request and enters the model's prompt.
+5. The agent incorrectly approves the refund.
 
-1. The agent learns: **"Zone 7 is a shortcut."**
-2. Later, a safety operator says: **"Zone 7 is now dangerous. Do not enter it."**
-3. The agent asks its memory system for information about Zone 7.
-4. A normal memory search may return the old shortcut because it is relevant.
-5. The agent may enter Zone 7 and violate the new safety instruction.
+With the proposed system, a support engineer can open that interaction and see the exact memories and source records supplied to the model. The engineer marks the 30-day memory as replaced by the current 14-day policy. The system prevents the old memory from entering future prompts, finds earlier interactions that used it, and replays selected cases to show whether the correction changes their outcomes.
 
-The problem is not that the memory search failed. It found a relevant memory. The problem is that **relevance alone does not tell the agent whether a memory should still be used**.
+## 4. What We Are Building
 
-## 4. What This Project Does
+The capstone will deliver the **Agent Memory Incident Lab**, a model-provider-neutral developer toolkit with two connected components:
 
-This project adds a checkpoint between the agent's stored memories and the AI model.
+### Runtime SDK
 
-The checkpoint asks:
+An application integrates the SDK between memory retrieval and the LLM call. The SDK:
 
-- Is this memory still active?
-- Has it expired?
-- Did a newer memory replace it?
-- Who provided it?
-- Does it conflict with a higher-priority safety instruction?
+- Records memory provenance, scope, validity, and version relationships
+- Applies deterministic admission, rejection, and quarantine policies
+- Assembles the approved context sent to the model
+- Links retrieved memories to the prompt, model output, tool action, and outcome
+- Works through a provider-neutral interface rather than depending on one LLM vendor
 
-In the Zone 7 example, it blocks the old shortcut and gives the model the current safety instruction. It also records why it made that decision.
+### Investigation and Replay Workbench
 
-This checkpoint is called the **Accountable Memory Gateway**.
+A lightweight web interface lets a developer or operator:
 
-## 5. How It Is Different
+- Inspect an interaction and the memories that influenced its context
+- Understand why each memory was admitted, rejected, or quarantined
+- Invalidate or supersede an incorrect memory
+- Find the memory's blast radius across previous interactions
+- Replay selected interactions with the correction
+- Compare the original and corrected outputs
 
-A typical memory system asks:
+For the capstone, both components will run locally or in a container. A hosted multi-tenant SaaS control plane is a possible future form, not an MVP requirement.
 
-> Which stored information is most relevant?
+## 5. What This Is Not
 
-This project asks two questions:
+- It is not another general agent orchestration platform.
+- It does not replace Salesforce, SAP, a vector database, or an agent framework.
+- It does not claim to determine whether arbitrary natural-language statements are true.
+- It does not require a human to approve every memory or model response.
+- It is not dependent on robotics, physical AI, or Gridworld.
 
-> Which stored information is most relevant?
->
-> Which of that information is allowed to enter the AI model's prompt?
+The product integrates with an AI application at its memory boundary. Future connectors could work with agents that use Salesforce, SAP, ServiceNow, or other systems of record. The capstone will use a small CRM-style data source so the entire workflow remains reproducible.
 
-| Typical agent memory | Accountable Memory Gateway |
+## 6. Why This Is Different From an Instruction File
+
+An `AGENTS.md`, system prompt, or application instruction can tell a model to prefer current policies. It does not necessarily prevent conflicting memories from entering the prompt, track which memory affected an output, locate other uses of a bad memory, or replay past cases after a correction.
+
+| Prompt or instruction file | Agent Memory Incident Lab |
 |---|---|
-| Finds relevant memories | Finds relevant memories and checks them |
-| May return old and new instructions together | Blocks instructions replaced by newer ones |
-| Usually treats sources similarly | Gives trusted sources more authority |
-| Shows what was retrieved | Shows what was allowed, blocked, and why |
-| Has no consistent correction process | Lets an operator invalidate or replace a memory |
+| Gives the model guidance | Enforces context assembly in application code |
+| Usually contains static instructions | Governs dynamic memories from many sources |
+| Leaves conflicting context for the model to resolve | Can remove invalid context before inference |
+| Does not expire individual memories | Supports validity periods and supersession |
+| Cannot show a memory's full blast radius | Links memories to affected interactions |
+| Cannot verify a correction by itself | Replays cases and compares results |
 
-This is not a new chatbot or a new memory database. It is a **control layer for AI applications that already use persistent memory**.
-
-## 6. What Will Be Built
-
-The capstone will contain four parts:
-
-1. **AI agent:** Receives a goal and chooses what to do next.
-2. **Grid world:** A small map where the agent completes a task and can encounter hazards.
-3. **Memory store:** Holds the agent's previous observations and instructions.
-4. **Memory gateway:** Checks memories before adding them to the model's prompt.
+## 7. How the Product Fits Into an AI Application
 
 ```text
-Agent needs to decide what to do
-                |
-                v
-      Find relevant memories
-                |
-                v
- Check which memories may be used
-                |
-                v
- Give approved memories to the AI model
-                |
-                v
-   Agent acts and outcome is recorded
+Customer message
+      |
+      v
+AI application retrieves customer data, policy, and memories
+      |
+      v
+Agent Memory Incident Lab SDK
+  1. Record candidates and sources
+  2. Enforce memory policy
+  3. Build approved context
+  4. Create a traceable context bundle
+      |
+      v
+Any supported LLM provider
+      |
+      v
+Response or tool action
+      |
+      v
+Outcome, investigation, correction, and replay
 ```
 
-## 7. What the Demo Will Show
+The customer-support agent is the demonstration client, not the main product. It will use a chat-style LLM API, a mock CRM, a policy store, persistent conversation memory, and a small set of tools such as `get_order`, `request_refund`, and `escalate_to_human`.
 
-The same agent will run the same tasks in two modes:
+## 8. Human-in-the-Loop Design
 
-1. **Without the gateway:** Relevant memories go directly into the model's prompt.
-2. **With the gateway:** Relevant memories are checked before entering the prompt.
+Human review will be reserved for exceptions:
 
-The demo will test four common failures:
+```text
+Clearly allowed memory       -> admit automatically
+Clearly invalid memory       -> reject automatically
+Unresolved or high-risk case -> quarantine or escalate
+```
 
-- A malicious or low-trust memory
-- An expired memory
-- A memory that conflicts with a safety rule
-- An old instruction replaced by a correction
+Operators define policies, review unresolved conflicts, and correct memories after incidents. The evaluation will measure the review rate so safety is not achieved simply by sending every decision to a human.
 
-A small inspection screen will show:
+## 9. Engineering Question
 
-- Which memories were found
-- Which were allowed or blocked
-- Why each decision was made
-- What the model received
-- What action the agent took
-- Whether the action was safe and successful
-
-The evaluation will answer a simple question: **Does checking memory before use reduce unsafe actions while still allowing the agent to complete its task?**
-
-## 8. Project Details
-
-- **Working title:** Accountable Memory Gateway for Persistent AI Agents
-- **Course track:** AI Engineering
-- **Primary focus:** Model and System
-- **Secondary focus:** Evaluation and Responsible AI
-- **Supporting focus:** Application and Deployment
-- **Primary users:** Engineers building AI agents that retain memory between tasks
-
-The sections below provide the lower-level technical design, evaluation plan, implementation scope, and delivery schedule.
-
-## 9. Technical Project Summary
-
-This project will build a runnable layer that checks persistent memories before placing them in an AI agent's prompt. Instead of selecting memories by relevance alone, the gateway will also consider source, authority, validity, replacement, and safety priority. It will record which memories were considered, which were allowed or blocked, why each decision was made, what action the agent took, and what happened next.
-
-A deterministic grid world will serve as the end-to-end demonstration client. Controlled memory-failure scenarios will validate the gateway against a relevance-only retrieval baseline. The primary contribution is the engineered gateway, integration contract, audit trail, operator correction workflow, and deployable demonstration. Evaluation demonstrates product value but is not the sole deliverable.
-
-The longer-term vision remains accountable persistent and embodied agents. Rich memory platforms, advanced simulators, and physical robotics are future extensions rather than capstone requirements.
-
-## Product Problem
-
-Persistent agents accumulate memories from observations, model outputs, users, operators, and policies. A relevance-only retrieval system can surface an obsolete shortcut, poisoned experience, or low-authority observation alongside an active safety correction. The application then lacks a consistent mechanism to decide which memory should be trusted or to explain why it entered the model's context.
-
-The Accountable Memory Gateway provides a control point between durable memory and working context. It allows an application to define deterministic governance rules, reject or subordinate unsafe memory candidates, apply operator corrections, and reconstruct memory influence lineage after a decision.
-
-## Engineering Question
-
-**Can a provenance- and policy-aware memory gateway prevent stale, untrusted, or superseded memories from entering a persistent agent's working context while preserving task performance and producing an auditable decision trail?**
+**Can application-level memory enforcement and replay prevent and diagnose failures that relevance-only retrieval and prompt-level instructions do not reliably prevent?**
 
 Supporting questions:
 
-- Can the gateway consistently enforce authority, validity, supersession, and safety-priority rules?
-- Does governed retrieval reduce unsafe actions compared with relevance-only retrieval?
-- How reliably does an authoritative operator correction change future context assembly?
-- What latency, token, and task-performance overhead does governance introduce?
-- Can an engineer reconstruct the memory-to-context-to-action sequence from the audit trail?
+- Can the SDK stop expired, superseded, or lower-authority memories from entering model context?
+- Can a developer trace an incorrect output back to the implicated memory?
+- Can the system identify other interactions exposed to the same memory?
+- Does replay demonstrate that a correction fixes the targeted cases without causing regressions?
+- What false-rejection, human-review, latency, token, and task-success costs does enforcement introduce?
 
-## Value Proposition
+## 10. Target Users and Value
 
-Existing memory retrieval commonly asks, "Which stored information is relevant?" This gateway adds a second question: "Which relevant information is currently authorized and safe to place in context?"
+### Primary User
 
-The system gives agent developers:
+An AI application engineer or reliability engineer responsible for a persistent, tool-using LLM application.
 
-- A documented integration point for governed context assembly
-- Explicit memory provenance and lifecycle metadata
-- Deterministic, testable admission and rejection rules
-- Operator correction, invalidation, and supersession controls
-- Evidence showing which memories were considered and why they were admitted or rejected
-- A reproducible way to test memory-related safety failures
+### Usage Setting
 
-The project will describe this evidence as **memory influence lineage**, not proof that a retrieved memory caused an LLM's internal reasoning.
+The application retrieves information from durable memory and business data before calling an LLM. When an output is wrong, the engineer needs to investigate and correct the application without manually searching prompts and logs across many interactions.
 
-## User Workflow
+### Value Proposition
 
-1. An application submits a memory candidate with content and governance metadata.
-2. The gateway validates and stores the memory.
-3. An agent requests memories relevant to its current observation or task.
-4. Retrieval produces a ranked candidate set.
-5. The governance engine checks authority, validity, status, supersession, and safety priority.
-6. The gateway returns an approved context bundle and machine-readable governance decisions.
-7. The agent selects an action.
-8. The application records the action and outcome against the context bundle.
-9. An operator can inspect, invalidate, supersede, or correct a memory.
+**Find the memory behind an AI failure, fix it once, determine what else it affected, and verify that the failure will not recur.**
 
-## MVP Scope
+Success feels like turning an ambiguous model incident into a reproducible software-debugging workflow.
+
+## 11. MVP Scope
 
 ### Required
 
-- Memory ingestion through a documented Python interface or local API
-- Persistent memory storage using SQLite
-- A versioned memory schema with provenance and lifecycle metadata
-- Simple candidate retrieval suitable for the controlled demonstration
-- Deterministic governance policies
-- Memory admission, rejection, and prioritization decisions with reason codes
-- Memory invalidation and supersession
-- Authoritative operator corrections
-- Approved context-bundle assembly
-- Append-only governance and action audit events
-- A documented agent integration
-- One deterministic grid-world demonstration client
-- Relevance-only and governed-retrieval modes
-- Four controlled memory-failure scenarios
-- Compact operator inspection interface
-- Automated tests and containerized local deployment
+- Python SDK with documented write, retrieve, govern, trace, correct, and replay interfaces
+- SQLite persistence for memories, versions, decisions, interactions, and outcomes
+- Memory metadata for source, scope, validity, authority, status, and supersession
+- Deterministic admission, rejection, quarantine, and prioritization policies
+- Append-only interaction and governance events
+- Blast-radius query from a memory to affected interactions
+- Deterministic replay using stored inputs, configurations, and context candidates
+- Side-by-side original and corrected output comparison
+- Lightweight investigation workbench
+- Provider-neutral model interface with at least one working LLM provider
+- Customer-support demonstration with a mock CRM, policies, conversation memory, and tools
+- Automated scenario, schema, policy, integration, and replay tests
+- Containerized local deployment and documented setup
 
 ### Explicitly Out of Scope
 
-- A general-purpose or enterprise memory platform
-- Knowledge graphs or graph databases
-- Vector databases unless the MVP demonstrates a concrete need
-- Learned policy engines or automatic truth verification
-- Semantic and reflection memory hierarchies
-- Autonomous goal generation or a general planning framework
-- Multiple agent frameworks or simulator integrations
-- MuJoCo, Isaac Sim, Habitat, and physical robotics
-- Reinforcement learning, fine-tuning, or model training
-- A large, polished, multipage dashboard
-- Formal causal claims about how an LLM arrived at a decision
+- A general-purpose enterprise agent control plane
+- Production Salesforce or SAP certification and marketplace distribution
+- Multi-tenant billing, identity, or hosted SaaS operations
+- Automatic truth verification for arbitrary memories
+- Learned policy engines or fine-tuning
+- Robotics, physical actuators, or complex simulation
+- Broad support for many agent frameworks or model providers
+- Human approval for every interaction
+- Formal claims that a memory caused the model's internal reasoning
 
-## System Architecture
+## 12. Demonstration Scenarios
 
-```text
-Agent Application / Grid-World Demo
-                |
-                v
-        Memory Query Interface
-                |
-                v
-      Accountable Memory Gateway
-        1. Retrieve candidates
-        2. Validate provenance
-        3. Check status and validity
-        4. Resolve supersession
-        5. Apply authority rules
-        6. Enforce safety priority
-                |
-                +----> Append-only audit events
-                |
-                v
-       Approved Context Bundle
-                |
-                v
-        Agent Action and Outcome
-```
+The customer-support application will include at least four controlled incidents:
 
-The gateway will separate candidate retrieval from governance. This makes it possible to compare relevance-only retrieval with governed retrieval without changing the agent or environment.
+1. **Superseded policy:** An old refund rule conflicts with the current policy.
+2. **Stale customer fact:** A remembered account tier conflicts with the CRM record.
+3. **Untrusted instruction:** Customer-provided text attempts to become an authoritative internal policy.
+4. **Cross-scope leakage:** A memory belonging to one customer is retrieved for another customer.
 
-## Core Data Contracts
+Each fixture will define the memory candidates, sources, expected governance decisions, expected safe answer or action, and expected replay change before experiments run.
+
+## 13. Evaluation
+
+### Compared Systems
+
+1. **Relevance-only retrieval:** Retrieved memories enter context without governance.
+2. **Prompt-only governance:** The model receives the same candidates plus instructions to prefer current and trusted information.
+3. **Runtime enforcement:** The SDK checks candidates before the model receives them.
+
+The same user request, business records, memory candidates, tools, and model configuration will be used across conditions.
+
+### Primary Metrics
+
+- **Policy-violation rate:** Responses or actions that violate the current scenario policy
+- **Invalid-memory admission rate:** Invalid candidates included in model context
+- **Correction success rate:** Targeted failures resolved after correction and replay
+- **Regression rate:** Previously correct cases made incorrect by a correction
+- **Blast-radius recall:** Known affected interactions returned by the impact query
+- **Task-success rate:** Customer requests handled correctly or safely escalated
+- **Human-review rate:** Interactions requiring operator review
+
+### Engineering and User Metrics
+
+- SDK latency and end-to-end latency
+- Context-token and API-cost overhead
+- Trace completeness
+- Time and accuracy for a developer to diagnose a seeded incident
+- Clarity of the original-versus-replay comparison
+
+If a formal developer study is infeasible, diagnosis and blast-radius results will be checked automatically against scenario ground truth and the user study will remain future work.
+
+## 14. Core Data Contracts
 
 ### Memory Record
 
 ```json
 {
-  "memory_id": "M205",
-  "content": "Do not enter Zone 7 while the beacon is active.",
-  "source_type": "safety_operator",
-  "source_id": "operator-12",
-  "authority": 100,
-  "confidence": 1.0,
-  "criticality": "safety",
-  "status": "active",
-  "created_at": "2026-08-23T10:00:00Z",
-  "valid_from": "2026-08-23T10:00:00Z",
-  "valid_until": null,
-  "supersedes": ["M101"]
+  "memory_id": "mem_refund_v1",
+  "scope": "organization:demo-company",
+  "content": "Refunds are allowed within 30 days.",
+  "source_type": "policy_document",
+  "source_id": "refund-policy-v1",
+  "authority": 90,
+  "status": "superseded",
+  "valid_from": "2026-01-01T00:00:00Z",
+  "valid_until": "2026-07-31T23:59:59Z",
+  "superseded_by": "mem_refund_v2"
 }
 ```
 
-### Governance Decision
+### Context Decision
 
 ```json
 {
-  "memory_id": "M205",
-  "decision": "admit",
-  "reason_codes": [
-    "ACTIVE",
-    "AUTHORITATIVE_SOURCE",
-    "APPLICABLE_SAFETY_CONSTRAINT"
-  ]
+  "interaction_id": "int_2048",
+  "memory_id": "mem_refund_v1",
+  "decision": "reject",
+  "reason_codes": ["SUPERSEDED", "OUTSIDE_VALIDITY_WINDOW"],
+  "policy_version": "memory-policy-v1"
 }
 ```
 
-### Context Bundle and Outcome Linkage
+### Replay Record
 
-Each context bundle should record:
+```json
+{
+  "original_interaction_id": "int_2048",
+  "replay_id": "replay_0031",
+  "correction_id": "mem_refund_v2",
+  "original_output": "Your refund is approved.",
+  "replay_output": "This request is outside the 14-day window.",
+  "expected_outcome_met": true
+}
+```
 
-- Query, observation, and available actions
-- Candidate memory IDs and retrieval scores
-- Governance decision and reason codes for each candidate
-- Ordered admitted memory IDs
-- Active policy and schema versions
-- Agent/model configuration
-- Selected action
-- Environment outcome and rule-violation indicators
-
-## Governance Policy
-
-The MVP policy will be deterministic and intentionally small:
-
-1. Reject memories that are invalid, expired, or inactive.
-2. Reject or subordinate memories superseded by an active replacement.
-3. Resolve direct conflicts in favor of the higher-authority applicable memory.
-4. Prioritize active safety-critical memories over convenience or efficiency memories.
-5. Record a stable reason code for every admission, rejection, or prioritization decision.
-6. Fail closed when a required safety conflict cannot be resolved.
-
-The capstone will not attempt to determine whether arbitrary natural-language memories are objectively true. Controlled scenarios will supply explicit metadata and known expected outcomes.
-
-## Product Validation
-
-### Compared Systems
-
-1. **Relevance-only retrieval:** Candidate ranking determines context insertion without governance checks.
-2. **Governed retrieval:** The same candidates pass through the Accountable Memory Gateway.
-
-The same agent, task, scenario, and candidate memories will be used in both modes.
-
-### Controlled Scenarios
-
-- **Poisoned memory:** A low-authority source inserts a misleading shortcut.
-- **Stale memory:** A previously valid environmental fact has expired.
-- **Conflicting authority:** A low-authority observation conflicts with an active safety policy.
-- **Superseded instruction:** A newer operator correction replaces an obsolete instruction.
-
-Each scenario will define the candidate memories, applicable policies, expected governance decisions, and expected safe action before the experiment runs.
-
-## Success Metrics
-
-### Primary Product Metrics
-
-- **Invalid-memory admission rate:** Invalid, expired, or superseded memories admitted divided by those considered
-- **Unsafe-action rate:** Actions violating an active safety constraint divided by eligible decisions
-- **Governance-policy accuracy:** Governance decisions matching scenario ground truth
-- **Correction adoption rate:** Applicable decisions using the authoritative replacement after an operator correction
-- **Task-completion rate:** Successfully completed episodes divided by attempted episodes
-- **Trace completeness:** Decisions containing every required lineage field
-
-### Engineering Metrics
-
-- Gateway latency per query
-- End-to-end decision latency
-- Context-token overhead
-- Storage growth per episode
-- API or model cost per episode
-
-### User-Impact Metric
-
-The primary user-impact question is whether the audit trail helps an engineer investigate a memory-related failure. If participant access permits, measure diagnosis accuracy and time using a summary-only view versus the gateway's lineage view. If a reviewer study is infeasible, validate reconstructability automatically against scenario ground truth and document the study as future work.
-
-## Definition of Done
-
-The capstone is complete when a new developer can follow the documentation to:
-
-1. Start the gateway and demonstration client locally with one documented command.
-2. Ingest memories with provenance, authority, validity, and supersession metadata.
-3. Retrieve candidates and receive an approved context bundle with reason codes.
-4. Invalidate or supersede a memory through an operator workflow.
-5. Run relevance-only and governed modes against all controlled scenarios.
-6. Reproduce the reported safety, task-performance, trace, and latency metrics.
-7. Inspect the complete memory-to-context-to-action lineage for a selected decision.
-
-## Course-Aligned Milestones
-
-### Milestone 1 — Product Scope and Engineering Design (Weeks 1–2)
-
-Deliverables:
-
-- AI Engineering track declaration and selected focus areas
-- Problem statement, target user, value proposition, and user workflow
-- MVP, explicit exclusions, architecture, and data contracts
-- Governance-policy specification and controlled-scenario definitions
-- Offline and user-impact success metrics
-- Technology choices and compute/API budget
-- Top risks, mitigations, fallbacks, and Responsible AI plan
-- Repository with README, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, and passing CI
-- Six-slide pitch deck or three-to-five-minute concept video
-
-Exit criteria:
-
-- The gateway boundary and agent integration contract are documented.
-- Every required scenario has expected governance and action outcomes.
-- The repository installs and its smoke tests pass in CI.
-
-### Milestone 2 — Data Contracts, Baseline, and Evaluation Harness (Weeks 3–5)
-
-Deliverables:
-
-- Versioned memory, governance-event, context-bundle, and outcome schemas
-- SQLite repository and memory ingestion interface
-- Deterministic grid world and fixed task
-- Relevance-only retrieval baseline
-- Scenario fixtures and expected decisions
-- Metric implementations and seeded experiment runner
-- Scenario/Data Card and initial baseline results
-- Mandatory TA check-in
-
-Exit criteria:
-
-- One command reproduces relevance-only results for all scenario fixtures.
-- Schema validation and metric tests pass.
-- The baseline demonstrates at least one designed memory-related failure.
-
-### Milestone 3 — Gateway and End-to-End Alpha (Weeks 6–9)
-
-Deliverables:
-
-- Governance engine with stable reason codes
-- Invalidation, supersession, and operator-correction workflows
-- Approved context-bundle assembly
-- Agent integration and outcome linkage
-- Append-only audit trail
-- Governed-retrieval experiments for all scenarios
-- Basic inspection interface
-- Model Card and System Card
-
-Exit criteria:
-
-- The complete ingest-to-action-to-investigation workflow runs end to end.
-- Automated tests verify expected governance decisions for every scenario.
-- Initial comparison results show where governance helps and where it fails.
-
-### Milestone 4 — Release Candidate and Documentation (Weeks 10–12)
-
-Deliverables:
-
-- Frozen feature set
-- Repeated seeded evaluation of relevance-only and governed modes
-- Final safety, task-performance, trace, and overhead results
-- Failure and error analysis
-- Integration tests and reproducibility checks
-- Containerized release candidate
-- API/integration documentation, draft technical report, and demo video
-- Mandatory TA check-in
-
-Exit criteria:
-
-- A new developer can run the documented workflow locally.
-- Reported results can be regenerated from versioned commands and fixtures.
-- Limitations and unresolved policy cases are documented.
-
-### Final Deliverable — Public Release and Showcase (Weeks 13–14)
-
-- Public repository and tagged release
-- Final technical report
-- Final comparison tables and figures
-- Live memory-governance and investigation demonstration
-- Documentation of limitations and future work
-- Showcase presentation
-
-## Initial Technology Choices
+## 15. Technology Plan
 
 - Python 3.11+
-- SQLite for memory records and queryable state
-- JSONL for append-only audit-event export
 - Pydantic or dataclasses for versioned contracts
-- A simple lexical or embedding-free retriever for the MVP
-- Provider-neutral LLM interface for the demonstration agent
-- Custom grid world or minimal Gymnasium interface
-- FastAPI only if a local service boundary improves the integration demonstration
-- Streamlit only if it is the fastest route to a compact inspection view
-- Pandas and Matplotlib for evaluation
+- SQLite for local persistence
+- JSONL export for append-only evidence
+- FastAPI for the service boundary if needed by the demo
+- Streamlit or a small web UI for investigation and replay
+- Provider-neutral LLM adapter with one required provider implementation
+- A mock CRM backed by deterministic fixtures
 - Pytest, Ruff, and mypy for verification
-- Docker for the Milestone 4 release candidate
+- Pandas and Matplotlib for evaluation
+- Docker for the release candidate
 
-## Risks, Mitigations, and Fallbacks
+API usage will be capped after a pilot estimates cost per case. Deterministic or recorded responses will validate system behavior; repeated live-model runs will be reserved for measuring model-dependent outcomes.
+
+## 16. Responsible AI and Data Plan
+
+- **Privacy:** Use synthetic customers, orders, conversations, and policies. Do not send real personal or business data to model APIs.
+- **Safety:** Demo tools operate on a synthetic CRM and cannot issue real refunds or change external records.
+- **Human oversight:** Escalate only unresolved or high-risk cases and measure escalation burden.
+- **Transparency:** Record model, prompt, policy, schema, memory, and configuration versions for every run.
+- **Security:** Test scope isolation and untrusted-memory injection explicitly.
+- **Limitations:** Source authority and ground truth are supplied by controlled fixtures. The MVP does not independently authenticate sources or establish objective truth.
+- **Licensing:** Record licenses and terms for dependencies, model APIs, and released fixtures before publication.
+
+## 17. Risks and Mitigations
 
 | Risk | Mitigation | Fallback |
 |---|---|---|
-| Natural-language conflict detection becomes an open-ended reasoning problem | Use explicit scenario metadata and narrow policy predicates | Require scenarios to declare conflict groups and applicable constraints |
-| Governance rules make the agent safe but unable to complete tasks | Measure task completion alongside safety and test policy precedence | Narrow to one safety rule and one efficiency tradeoff with documented fail-closed behavior |
-| The project expands into a general memory platform | Freeze the MVP interfaces and four scenario families at Milestone 1 | Remove HTTP service and use a documented in-process Python interface |
-| LLM stochasticity obscures gateway effects | Hold candidate memories and scenarios constant and repeat runs | Use a scripted agent to verify policy behavior, then treat the LLM demo as secondary |
-| API cost limits repeated runs | Estimate cost in a pilot and constrain actions and episode length | Use a smaller or local model without reducing core policy tests |
+| The project resembles existing control planes or memory products | Focus on incident investigation, blast radius, correction replay, and comparison with prompt-only governance | Present it as an interoperable reference implementation and evaluation rather than a new general platform |
+| Conflict detection becomes open-ended language reasoning | Use explicit scopes, versions, validity, source types, and controlled conflict groups | Limit the MVP to deterministic predicates |
+| Replay is not reproducible because LLMs are stochastic | Store complete inputs and configurations and repeat model runs | Use recorded or deterministic model responses for system correctness tests |
+| Human review becomes the bottleneck | Admit and reject clear cases automatically and measure review rate | Quarantine uncertain memory while allowing low-risk tasks to continue |
+| The demo becomes a customer-support project instead of a memory product | Keep the customer-support agent thin and isolate it behind the SDK contract | Replace it with another fixture-driven LLM client without changing the core system |
+| API cost limits experiments | Pilot early, cap tokens and repetitions, and cache only where valid | Use a smaller or local model for secondary runs |
 
-## Responsible AI Plan
+## 18. Definition of Done
 
-- **Safety:** The system operates only in simulation and has no external tools or physical actuators. Poisoned memories are labeled evaluation fixtures. Safety conflicts fail closed.
-- **Privacy:** Core experiments use synthetic data. Logs will avoid personal data and document retention and deletion behavior.
-- **Fairness:** The grid-world scenarios do not support demographic fairness claims. Any participant-based investigation study will report sampling limitations.
-- **Licensing:** Record licenses and usage constraints for dependencies, the environment, model/API, and released fixtures.
-- **Transparency:** Record model, schema, policy, scenario, and configuration versions for every reported run.
-- **Limitations:** Governance metadata is supplied by the controlled system; the MVP does not independently verify whether a source is truthful or an authority is legitimate.
+A new developer can:
 
-## Future Work
+1. Start the toolkit and demonstration locally with one documented command.
+2. Run the same support incidents under relevance-only, prompt-only, and enforced-memory conditions.
+3. Inspect the memories and business records used for one incorrect output.
+4. Correct or supersede the implicated memory.
+5. Find other interactions exposed to that memory.
+6. Replay selected interactions and compare original and corrected outputs.
+7. Reproduce the reported safety, task-success, review-rate, trace, latency, and cost metrics.
 
-Future extensions may include learned conflict detection, temporal knowledge graphs, richer source authentication, policy authoring tools, additional agent-framework adapters, live monitoring, more complex simulations, and physical embodied agents. None of these are dependencies for capstone completion.
+## 19. Course-Aligned Milestones
+
+### Milestone 1: Product and Evaluation Design, Weeks 1-2
+
+- Finalize problem, target user, product boundary, realistic support workflow, and team roles
+- Define SDK interfaces, trace schema, governance rules, incident fixtures, baselines, and metrics
+- Establish repository standards, CI, documentation, risk plan, and pitch artifact
+
+### Milestone 2: Baselines and Evidence Model, Weeks 3-5
+
+- Implement synthetic CRM, thin support agent, relevance-only baseline, and prompt-only baseline
+- Implement memory, interaction, context, outcome, and replay contracts
+- Freeze four incident fixtures and expected outcomes
+- Produce the first end-to-end incorrect-output trace
+
+### Milestone 3: Enforcement and Investigation Alpha, Weeks 6-9
+
+- Implement runtime governance, correction, supersession, quarantine, and reason codes
+- Implement blast-radius queries and deterministic replay
+- Deliver the investigation workbench and full end-to-end workflow
+- Run initial three-condition experiments and document failures
+
+### Milestone 4: Release Candidate, Weeks 10-12
+
+- Repeat evaluation across fixed cases and model runs
+- Complete latency, token, cost, review-rate, and regression analysis
+- Harden integration tests, container deployment, documentation, and demo flow
+- Draft the technical report, System Card, and demo video
+
+### Final Deliverable, Weeks 13-14
+
+- Publish the repository and tagged release
+- Deliver the final report, comparison figures, and limitations
+- Demonstrate investigation, correction, blast-radius analysis, and replay live
+
+## 20. Immediate Decisions for the Team
+
+- Confirm the customer-support incident workflow as the primary demonstration
+- Select the first LLM provider and define the provider-neutral adapter boundary
+- Decide whether the demo CRM is entirely local or uses a developer sandbox
+- Assign owners for SDK and storage, demo agent and fixtures, workbench, evaluation, and documentation
+- Schedule a weekly cadence meeting and track decisions and blockers in the repository
