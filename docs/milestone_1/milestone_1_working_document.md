@@ -4,7 +4,7 @@
 
 **Course:** CIS-5980
 **Track:** AI Engineering
-**Team:** Bryan Yang, Will Liu, & Lephanie Grueber
+**Team:** Bryan Yang, Will Liu, & Guadalupe Cantera
 **Status:** Working submission draft
 **Repository:** [https://github.com/BryanDYang/agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)
 
