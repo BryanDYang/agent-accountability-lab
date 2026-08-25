@@ -83,6 +83,8 @@ Each scenario will define expected governance decisions, the allowed context set
 
 ### Success metrics
 
+The proposed notation, equations, measurement policies, thresholds, and open decisions are documented for group review in [Milestone 1 Success Metrics: Group Review Draft](success_metrics_math.md). The table below remains preliminary until that review is complete.
+
 | Metric                         | Definition                                                                                  | Preliminary success target                                                                           |
 | ------------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | Invalid-context admission rate | Invalid candidates included in the model bundle divided by all invalid candidates retrieved | At least 80% lower than relevance-only retrieval                                                     |
