@@ -14,13 +14,11 @@
 
 ## 1. Project Explanation and Motivation
 
-Coding agents assemble model context from user tasks, target files, repository instructions, company documentation, retrieved files, tool output, and memories from earlier work. These sources can be stale, duplicated, untrusted, mutually inconsistent, or applicable only to a different repository or directory. Retrieval systems usually optimize for relevance, but relevant information is not necessarily current, applicable, or safe.
+Coding agents assemble model context from user tasks, target files, repository instructions, company documentation, retrieved files, tool output, and memories from earlier work. These sources can be stale, duplicated, untrusted, mutually inconsistent, or applicable only to a different repository or directory. Retrieval systems usually optimize for relevance, but relevant information is not necessarily current, applicable, or safe. Developers also have limited visibility into this process: they may see the user request and final answer without seeing which context candidates were considered, why a source was removed, how conflicts were handled, or the exact context ultimately sent to the model. That makes context-related failures difficult to explain and governance benefits difficult to demonstrate.
 
-Developers also have limited visibility into this process. They may see the user request and final answer without seeing which context candidates were considered, why a source was removed, how conflicts were handled, or the exact context ultimately sent to the model. That makes context-related failures difficult to explain and governance benefits difficult to demonstrate.
+We propose a visual context-governance workbench for coding agents. A user can construct a coding task, add candidate context through drag and drop or controlled fixtures, observe deterministic governance decisions, inspect the exact compiled model input, and compare the same task with and without governance. The application will report context and output tokens, latency, policy violations, task outcomes, and false rejections so token reduction is not mistaken for reliability improvement. This plan combines a working application, deterministic governance policies, controlled coding scenarios, and paired evaluation runs to demonstrate whether the system improves reliability without unacceptable costs.
 
-We propose a visual context-governance workbench for coding agents. A user can construct a coding task, add candidate context through drag and drop or controlled fixtures, observe deterministic governance decisions, inspect the exact compiled model input, and compare the same task with and without governance. The application will report context and output tokens, latency, policy violations, task outcomes, and false rejections so token reduction is not mistaken for reliability improvement.
-
-The research question is:
+As an AI Engineering project, the proposal uses the following engineering validation question to connect the system design to measurable success criteria; it is not presented as a separate Research-Driven track requirement:
 
 > Can visible, application-level context governance prevent invalid context from reaching a coding model and improve controlled coding-task outcomes without unacceptable loss of valid context, latency, or token efficiency?
 
@@ -329,13 +327,31 @@ The team requests feedback on:
 - Whether one open-source model plus a limited stronger-model comparison provides adequate implementation depth
 - Whether the proposed task, safety, token, latency, and false-rejection metrics are sufficient
 
-## 11. Submission Readiness Checklist
+## 11. Outstanding Milestone 1 TODOs
 
-- [ ] Confirm roles with all team members
-- [ ] Confirm the first model integration and optional comparison model
-- [ ] Freeze the precedence policy and reason codes
-- [ ] Review the proposed metric definitions and thresholds
-- [ ] Create the six-slide pitch deck from this proposal
-- [ ] Verify required repository settings and issue labels
-- [ ] Record teaching-staff feedback and resulting decisions
-- [ ] Export the required submission artifacts according to Canvas instructions
+The following items are not yet complete. They are tracked explicitly so the working proposal is not mistaken for a submission-ready package.
+
+### Proposal content
+
+- [x] Consolidate the project explanation and motivation into the two-paragraph format named in the grading rubric.
+- [ ] Add a weekly check-in with progress made, top blockers or risks, and planned next steps.
+- [ ] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks.
+- [ ] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional.
+- [ ] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions.
+- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking.
+- [ ] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards.
+- [ ] Add an explicit early timeline checkpoint for data or fixture access and licensing review.
+- [ ] Confirm the first model integration and optional comparison model.
+- [ ] Freeze the precedence policy and reason-code vocabulary.
+- [ ] Review the proposed metric definitions and set final thresholds after the pilot.
+
+### Repository requirements
+
+- [ ] Add a basic continuous-integration smoke-test workflow.
+- [ ] Create and verify the required GitHub issue labels and repository settings.
+
+### Submission artifacts and follow-up
+
+- [ ] Create a pitch deck with six slides or fewer, or a three-to-five-minute concept video.
+- [ ] Record teaching-staff feedback, resulting decisions, and next steps; mark feedback as pending until it is received.
+- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions.
