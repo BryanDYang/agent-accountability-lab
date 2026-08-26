@@ -22,13 +22,6 @@ env/
 # Environment variables
 .env
 
-# Experiment results (large, auto-generated)
-experiments/results/
-
-# Vector store data
-memory/.chroma/
-memory/.faiss/
-
 # Pytest / coverage
 .pytest_cache/
 .coverage

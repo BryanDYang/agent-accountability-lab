@@ -1,9 +1,12 @@
-# docs
+# Documentation
 
-| Document | Purpose |
+## Current
+
+| Document | Authority |
 |---|---|
-| [quickstart.md](quickstart.md) | Step-by-step setup and first experiment |
-| [proposal.md](proposal.md) | Project proposal and research questions |
-| [architecture.md](architecture.md) | System architecture and component design |
-| [evaluation_plan.md](evaluation_plan.md) | Evaluation methodology and metrics |
-| [milestone_1/success_metrics_math.md](milestone_1/success_metrics_math.md) | Group review draft for Milestone 1 metrics, math, and thresholds |
+| [Milestone 1 Project Proposal](milestone_1/project_proposal.md) | Source of truth for the current product direction, scope, architecture, and evaluation plan |
+| [Milestone 1 Success Metrics](milestone_1/success_metrics_math.md) | Supporting source of truth for metric definitions and proposed thresholds |
+
+## Historical
+
+Superseded planning documents are retained under [archive](archive/README.md) as decision history. They are not current requirements.
