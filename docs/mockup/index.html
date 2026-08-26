@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context Governance Architecture</title>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem('architecture-theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+    } catch (error) {}
+  </script>
+  <style>
+    :root { color-scheme:light; --bg:#f4f2ec; --surface:#faf9f5; --hover:#eeece5; --ink:#171717; --muted:#5f5e59; --faint:#9a9890; --line:#292929; --green:#197044; --red:#a63d36; --amber:#8a6115; --mono:"SFMono-Regular","Cascadia Code",Consolas,monospace; }
+    :root[data-theme="dark"] { color-scheme:dark; --bg:#151515; --surface:#191919; --hover:#1e1e1e; --ink:#f2f0eb; --muted:#a9a7a1; --faint:#696863; --line:#d8d5ce; --green:#a7ddb8; --red:#e9a39d; --amber:#e6c889; }
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme]) { color-scheme:dark; --bg:#151515; --surface:#191919; --hover:#1e1e1e; --ink:#f2f0eb; --muted:#a9a7a1; --faint:#696863; --line:#d8d5ce; --green:#a7ddb8; --red:#e9a39d; --amber:#e6c889; }
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; min-width:320px; min-height:100vh; background:var(--bg); color:var(--ink); font:15px/1.55 var(--mono); letter-spacing:.012em; }
+    button,select { font:inherit; color:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible,select:focus-visible { outline:2px solid var(--ink); outline-offset:4px; }
+    .shell { width:min(1120px,calc(100% - 32px)); margin:0 auto; padding:30px 0 64px; }
+    .masthead { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:34px; }
+    .brand { color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+    .brand strong { color:var(--ink); font-weight:500; }
+    .actions { display:flex; align-items:center; gap:10px; }
+    .select,.run { min-height:36px; padding:0 12px; border:1px solid var(--faint); border-radius:0; background:transparent; font-size:11px; }
+    .run { border-color:var(--line); background:var(--ink); color:var(--bg); font-weight:700; }
+    .run:hover { background:transparent; color:var(--ink); }
+    .flow { display:grid; justify-items:center; }
+    .node { width:100%; border:1px solid var(--line); background:var(--surface); }
+    .user-node,.agent-node { padding:20px 24px; }
+    .user-node { display:grid; grid-template-columns:auto 1fr; gap:18px; align-items:baseline; }
+    .node-label { color:var(--ink); font-size:14px; white-space:nowrap; }
+    .task { color:var(--muted); }
+    .task strong { color:var(--ink); font-weight:500; }
+    .connector { display:grid; justify-items:center; min-height:82px; color:var(--muted); }
+    .connector .stem { width:1px; height:46px; background:var(--line); }
+    .connector .caption { margin:5px 0; font-size:12px; text-align:center; }
+    .connector .arrow { color:var(--ink); font-size:17px; line-height:1; }
+    .governance { padding:23px; }
+    .governance-title { margin:0 0 22px; text-align:center; font-size:16px; font-weight:500; letter-spacing:.04em; }
+    .stages { display:grid; }
+    .stage { border:1px solid var(--line); }
+    .stage + .stage { margin-top:-1px; }
+    .stage-toggle { display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:10px; width:100%; padding:16px 18px; border:0; background:transparent; text-align:left; }
+    .stage-toggle:hover { background:var(--hover); }
+    .stage-number { color:var(--muted); }
+    .stage-title { font-size:14px; }
+    .stage-summary { color:var(--muted); font-size:11px; }
+    .chevron { display:inline-block; margin-left:10px; color:var(--ink); transition:transform .18s ease; }
+    .stage.open .chevron { transform:rotate(45deg); }
+    .stage-body { display:none; padding:0 18px 18px 62px; }
+    .stage.open .stage-body { display:block; }
+    .stage-body p { margin:0; color:var(--muted); font-size:12px; }
+    .sources { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .source { min-width:0; }
+    .source h3 { margin:0 0 7px; font-size:12px; font-weight:500; }
+    .source p { overflow-wrap:anywhere; }
+    .source button { margin-top:11px; padding:3px 0; border:0; border-bottom:1px solid var(--faint); background:transparent; color:var(--muted); font-size:10px; }
+    .source button:hover { color:var(--ink); border-color:var(--ink); }
+    .rules { display:grid; gap:8px; margin:0; padding:0; list-style:none; color:var(--muted); font-size:12px; }
+    .rules li::before { content:"- "; color:var(--ink); }
+    code { color:var(--ink); font-family:inherit; }
+    .detail { display:none; grid-template-columns:1fr auto; gap:18px; margin-top:14px; padding:13px 15px; border-left:1px solid var(--faint); color:var(--muted); font-size:11px; }
+    .detail.visible { display:grid; }
+    .decision { font-weight:700; }
+    .admit { color:var(--green); } .reject { color:var(--red); } .quarantine { color:var(--amber); }
+    .agent-node { text-align:center; }
+    .agent-node h2 { margin:0 0 14px; font-size:16px; font-weight:500; }
+    .agent-node p { margin:3px 0; color:var(--muted); font-size:12px; }
+    .agent-node strong { color:var(--green); font-weight:500; }
+    .evaluation { margin-top:28px; border-top:1px solid var(--faint); }
+    .evaluation summary { padding:16px 0; color:var(--muted); cursor:pointer; font-size:12px; list-style:none; }
+    .evaluation summary::-webkit-details-marker { display:none; }
+    .evaluation summary::before { content:"+ "; color:var(--ink); }
+    .evaluation[open] summary::before { content:"- "; }
+    .compare { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--faint); }
+    .run-card { padding:18px; }
+    .run-card + .run-card { border-left:1px solid var(--faint); }
+    .run-card h3 { margin:0 0 14px; font-size:12px; font-weight:500; }
+    .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .metric small { display:block; color:var(--faint); font-size:9px; text-transform:uppercase; }
+    .metric span { font-size:13px; }
+    .running .run { opacity:.55; pointer-events:none; }
+    .running .governance { animation:blink .6s steps(2) infinite; }
+    @keyframes blink { 50% { border-color:var(--faint); } }
+    @media (max-width:720px) {
+      body { font-size:13px; } .shell { width:min(100% - 20px,1120px); padding-top:16px; } .masthead { align-items:flex-start; margin-bottom:22px; } .brand span,.model-select { display:none; }
+      .user-node { grid-template-columns:1fr; gap:7px; } .governance { padding:12px; } .governance-title { margin:6px 0 16px; font-size:13px; }
+      .stage-toggle { grid-template-columns:25px 1fr auto; padding:13px 11px; } .stage-summary { font-size:0; } .stage-summary .chevron { font-size:11px; } .stage-body { padding:0 12px 14px 46px; }
+      .sources,.compare { grid-template-columns:1fr; } .sources { gap:16px; } .source + .source { padding-top:14px; border-top:1px dotted var(--faint); }
+      .run-card + .run-card { border-top:1px solid var(--faint); border-left:0; } .connector .caption { max-width:260px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell" id="app">
+    <header class="masthead">
+      <div class="brand"><strong>Context Governance</strong> <span>/ architecture explorer</span></div>
+      <div class="actions"><select class="select model-select" aria-label="Coding model"><option>Qwen2.5-Coder 7B</option><option>Codex</option></select><select class="select" id="themeSelect" aria-label="Color theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select><button class="run" id="runButton" type="button">Run trace</button></div>
+    </header>
+    <div class="flow">
+      <section class="node user-node" aria-label="Task input"><span class="node-label">[ User / IDE / Task ]</span><span class="task"><strong>Refactor authentication middleware</strong> / target <code>src/auth/**</code></span></section>
+      <div class="connector" aria-hidden="true"><span class="stem"></span><span class="caption">(1) task intent + target files</span><span class="arrow">▼</span></div>
+      <section class="node governance" aria-labelledby="governance-title">
+        <h1 class="governance-title" id="governance-title">GOVERNANCE ORCHESTRATION LAYER</h1>
+        <div class="stages">
+          <article class="stage open">
+            <button class="stage-toggle" type="button" aria-expanded="true"><span class="stage-number">01.</span><span class="stage-title">INGESTION + EXTRACTION WORKERS</span><span class="stage-summary">parallel / deterministic <span class="chevron">+</span></span></button>
+            <div class="stage-body">
+              <div class="sources">
+                <div class="source"><h3>[Doc Extractor]</h3><p>Repo and company docs<br>version checks</p><button type="button" data-detail="doc">inspect 2 candidates</button></div>
+                <div class="source"><h3>[Rules Scanner]</h3><p><code>AGENTS.md</code> and<br>glob-matched <code>.rules</code></p><button type="button" data-detail="rules">inspect 2 candidates</button></div>
+                <div class="source"><h3>[Memory Retriever]</h3><p>Episodic vector DB<br>semantic search</p><button type="button" data-detail="memory">inspect 1 candidate</button></div>
+              </div>
+              <div class="detail" id="sourceDetail" aria-live="polite"><span id="detailText"></span><span class="decision" id="detailDecision"></span></div>
+            </div>
+          </article>
+          <article class="stage open">
+            <button class="stage-toggle" type="button" aria-expanded="true"><span class="stage-number">02.</span><span class="stage-title">DETERMINISTIC PRE-FILTER + HIERARCHY PRUNER</span><span class="stage-summary">5 in / 2 survive <span class="chevron">+</span></span></button>
+            <div class="stage-body"><ul class="rules"><li>Path scope masking: drop rules not matching <code>src/auth/**</code></li><li>Staleness pruning: drop docs older than package lockfile versions</li><li>Priority mapping: repo rules &gt; global docs &gt; episodic memories</li></ul></div>
+          </article>
+          <article class="stage open">
+            <button class="stage-toggle" type="button" aria-expanded="true"><span class="stage-number">03.</span><span class="stage-title">SEMANTIC RECONCILER</span><span class="stage-summary">structured output <span class="chevron">+</span></span></button>
+            <div class="stage-body"><ul class="rules"><li>Evaluate only surviving conflicting claims</li><li>Compile one canonical context payload within the token budget</li></ul></div>
+          </article>
+        </div>
+      </section>
+      <div class="connector" aria-hidden="true"><span class="stem"></span><span class="caption">(2) curated, conflict-free context / 1,184 tokens</span><span class="arrow">▼</span></div>
+      <section class="node agent-node" aria-label="Coding agent output"><h2>CODING AGENT</h2><p>Executes plan, writes code, edits files</p><p>Reads only the governed payload / <strong>12 of 12 tests pass</strong></p></section>
+    </div>
+    <details class="evaluation">
+      <summary>expand paired evaluation</summary>
+      <div class="compare">
+        <article class="run-card"><h3>WITHOUT GOVERNANCE <span class="reject">/ 1 violation</span></h3><div class="metrics"><div class="metric"><small>Input</small><span>2,231</span></div><div class="metric"><small>Latency</small><span>4.8s</span></div><div class="metric"><small>Tests</small><span class="reject">10/12</span></div></div></article>
+        <article class="run-card"><h3>GOVERNANCE ENABLED <span class="admit">/ policy clean</span></h3><div class="metrics"><div class="metric"><small>Input</small><span class="admit">1,184</span></div><div class="metric"><small>Latency</small><span class="admit">3.1s</span></div><div class="metric"><small>Tests</small><span class="admit">12/12</span></div></div></article>
+      </div>
+    </details>
+  </main>
+  <script>
+    const app=document.querySelector('#app');
+    const themeSelect=document.querySelector('#themeSelect');
+    themeSelect.value=document.documentElement.dataset.theme || 'system';
+    themeSelect.addEventListener('change',()=>{
+      const theme=themeSelect.value;
+      if(theme==='system') delete document.documentElement.dataset.theme;
+      else document.documentElement.dataset.theme=theme;
+      try { localStorage.setItem('architecture-theme',theme); } catch(error) {}
+    });
+    document.querySelectorAll('.stage-toggle').forEach(toggle=>toggle.addEventListener('click',()=>{const stage=toggle.closest('.stage');stage.classList.toggle('open');toggle.setAttribute('aria-expanded',String(stage.classList.contains('open')));}));
+    const candidates={doc:{text:'auth-migration-v1.md / stale dependency guidance',decision:'REJECT',className:'reject'},rules:{text:'AGENTS.md + .rules/auth.rules / matching scope and highest authority',decision:'ADMIT',className:'admit'},memory:{text:'retry-pattern.md / conflicts with repository rule',decision:'QUARANTINE',className:'quarantine'}};
+    document.querySelectorAll('[data-detail]').forEach(button=>button.addEventListener('click',()=>{const candidate=candidates[button.dataset.detail];const detail=document.querySelector('#sourceDetail');document.querySelector('#detailText').textContent=candidate.text;const decision=document.querySelector('#detailDecision');decision.textContent=candidate.decision;decision.className=`decision ${candidate.className}`;detail.classList.add('visible');}));
+    document.querySelector('#runButton').addEventListener('click',()=>{app.classList.add('running');const button=document.querySelector('#runButton');button.textContent='Tracing...';window.setTimeout(()=>{app.classList.remove('running');button.textContent='Trace complete';document.querySelector('.evaluation').open=true;},900);});
+  </script>
+</body>
+</html>

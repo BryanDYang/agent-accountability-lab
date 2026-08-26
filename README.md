@@ -10,12 +10,16 @@ The authoritative milestone 1 scope is [Project Proposal](docs/milestone_1/proje
 
 Metric definitions and proposed decision thresholds are maintained separately in the [Success Metrics Appendix](docs/milestone_1/success_metrics_math.md).
 
+The interactive product concept is available as a dependency-free [HTML mockup](docs/mockup/index.html). Open the file directly in a browser to explore the candidate context, governance trace, exact model input, and governed-versus-ungoverned comparison.
+
 Historical planning documents are retained in [docs/archive](docs/archive/README.md) for decision history only. They are not current requirements.
 
 ## Repository structure
 
 ```text
 docs/
+├── mockup/
+│   └── index.html
 ├── milestone_1/
 │   ├── project_proposal.md
 │   └── success_metrics_math.md
