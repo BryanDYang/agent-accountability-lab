@@ -18,9 +18,8 @@ Milestone 1 should evaluate these claims separately:
 1. Runtime governance prevents invalid context from reaching the model.
 2. Preventing invalid context reduces rule violations and improves task outcomes on adversarial scenarios.
 3. Runtime governance does not materially harm clean-control performance.
-4. Corrections resolve targeted failures without creating unacceptable regressions.
-5. Governance produces complete, useful evidence for diagnosis and impact analysis.
-6. The safety benefit is achieved with measurable and bounded latency, token, and financial overhead.
+4. Governance preserves valid context and produces complete, understandable decision evidence.
+5. The safety benefit is achieved with measurable and bounded latency, token, and financial overhead.
 
 The project should not claim economic ROI unless failure costs can be justified independently of the observed results.
 
@@ -234,45 +233,9 @@ $$
 
 The group must decide whether a 5 percentage-point loss is acceptable and whether the experiment has enough clean-control tasks to evaluate that margin.
 
-## 6. Correction success and regression safety
+## 6. Deferred stretch-goal metrics
 
-### 6.1 Metric identities
-
-Let $F_c$ be seeded failures in class $c$, and let $K_f=1$ when correction plus replay produces the expected corrected result.
-
-$$
-\operatorname{CSR}_c=\frac{\sum_{f\in F_c}K_f}{|F_c|}
-$$
-
-Let $Q$ contain tasks that were correct before correction, and let $D_q=1$ when task $q$ becomes incorrect afterward.
-
-$$
-\operatorname{RegressionRate}=\frac{\sum_{q\in Q}D_q}{|Q|}
-$$
-
-### 6.2 Measurement policy
-
-- Correction must change only the designated source or its status.
-- Replay must preserve repository revision, request, tools, and model configuration.
-- Correction success must be reported by scenario class.
-- Only previously correct tasks belong in the regression denominator.
-- Newly quarantined or escalated clean tasks count as regressions unless that outcome was already acceptable.
-
-### 6.3 Provisional decision rules
-
-The original proposal requires:
-
-$$
-\forall c\in\mathcal{C},\quad\operatorname{CSR}_c=1.00
-$$
-
-and:
-
-$$
-\operatorname{RegressionRate}\le0.05
-$$
-
-These thresholds are not meaningful without minimum sample sizes. A result of 1 out of 1 is not strong evidence of perfect correction. The group must define $|F_c|_{\min}$ and $|Q|_{\min}$.
+Correction, replay, and blast-radius analysis are stretch goals rather than Milestone 1 success gates. If implemented, they must use prespecified fixtures and preserve the task request, repository revision, tools, candidate set, and model configuration. Their results must be labeled exploratory and must not substitute for the primary governed-versus-ungoverned comparison.
 
 ## 7. Valid-context preservation and human review
 
@@ -329,7 +292,7 @@ $$
 
 No threshold is yet approved for $\operatorname{VQR}_G$, $\operatorname{UTRR}_G$, or review recall.
 
-## 8. Trace completeness and diagnostic utility
+## 8. Trace completeness and decision clarity
 
 ### 8.1 Metric identities
 
@@ -341,35 +304,18 @@ $$
 {NR}
 $$
 
-Let $Z_i=1$ when evaluator $i$ identifies the correct source within a fixed limit $\tau$:
+Let $Z_i=1$ when evaluator $i$ correctly identifies the reason for a candidate decision from the workbench:
 
 $$
-\operatorname{DiagnosisAccuracy}=\frac{1}{M}\sum_{i=1}^{M}Z_i
-$$
-
-For successful diagnoses:
-
-$$
-D_i=T_i^{\mathrm{identified}}-T_i^{\mathrm{start}}
-$$
-
-Blast-radius retrieval:
-
-$$
-\operatorname{BRRecall}_s=\frac{|K_s\cap\widehat{K}_s|}{|K_s|}
-$$
-
-$$
-\operatorname{BRPrecision}_s=\frac{|K_s\cap\widehat{K}_s|}{|\widehat{K}_s|}
+\operatorname{DecisionClarity}=\frac{1}{M}\sum_{i=1}^{M}Z_i
 $$
 
 ### 8.2 Measurement policy
 
 - Trace completeness is all-or-nothing per evaluated trial.
-- Diagnosis accuracy and diagnosis time must be reported separately.
-- Incorrect or incomplete diagnoses are assigned the prespecified time limit $\tau$ for time summaries.
-- Blast-radius recall and precision must appear together. Returning every interaction cannot count as a good impact query.
-- If a human study is not feasible, automated ground-truth checks must not be described as evidence of human usability.
+- The required trace includes candidate metadata, governance decision, reason code, policy version, exact compiled input, model configuration, usage, and scored outcome.
+- Decision-clarity questions and correct answers must be specified before evaluators inspect the interface.
+- If a human evaluation is infeasible, automated checks may establish trace completeness but must not be described as evidence of human usability.
 
 ### 8.3 Provisional decision rules
 
@@ -377,13 +323,7 @@ $$
 \operatorname{CompleteTraceRate}=1.00
 $$
 
-The original proposal also suggests:
-
-$$
-\operatorname{median}(D_i^*)<180\ \mathrm{seconds}
-$$
-
-and 90% decision-clarity accuracy. Diagnosis and clarity thresholds require an evaluator protocol and minimum sample size before approval.
+The proposed 90% decision-clarity target requires an evaluator protocol and minimum sample size before approval.
 
 ## 9. Latency, token use, and monetary cost
 
@@ -523,7 +463,6 @@ Failure of any Tier 1 gate prevents the full reliability claim.
 ### Tier 2: Required operational acceptability gates
 
 - Hard false-rejection rate is within its approved limit.
-- Regression rate is within its approved limit.
 - Latency, token, and cost overhead are within pilot-derived limits.
 - Human-review burden is reported and within an approved limit if one is established.
 
@@ -531,9 +470,8 @@ Failure of a Tier 2 gate means the safety result may be valid, but the system is
 
 ### Tier 3: Diagnostic and exploratory evidence
 
-- Diagnosis time and accuracy
 - Decision clarity
-- Blast-radius precision and recall
+- Output-token behavior
 - Economic ROI
 
 Tier 3 results describe usefulness and future work unless the group promotes them to approved gates before final evaluation.
@@ -552,7 +490,6 @@ Tier 3 results describe usefulness and future work unless the group promotes the
 | Minimum fixtures per class | Not defined | Define |
 | Hard false-rejection limit | 5% | Review |
 | Quarantine and review limits | Not defined | Define after pilot |
-| Diagnosis time limit | 180 seconds | Review |
 | Latency limit | Replace provisional 100 ms with pilot-derived limit | Review |
 | Token gate | Use total-token p50, p95, mean, and total | Define after pilot |
 | Cost gate | Not defined | Define after pilot |
@@ -561,7 +498,7 @@ Tier 3 results describe usefulness and future work unless the group promotes the
 
 ## 14. Recommended review order
 
-1. Approve or revise the six claims in Section 1.
+1. Approve or revise the five claims in Section 1.
 2. Agree on ground-truth labeling and safe-escalation rules.
 3. Approve primary metrics and aggregation policies.
 4. Define minimum task counts and repeated-trial policy.

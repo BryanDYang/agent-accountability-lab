@@ -1,319 +1,341 @@
 # Milestone 1 Project Proposal and Scope
 
-## Agent Context Governance for Reliable Coding Agents
+## Visual Context Governance for Reliable Coding Agents
 
 **Course:** CIS-5980
+
 **Track:** AI Engineering
-**Team:** Bryan Yang, Will Liu, & Guadalupe Cantera
+
+**Team:** Bryan Yang, Will Liu, and Guadalupe Cantera
+
 **Status:** Working submission draft
-**Repository:** [https://github.com/BryanDYang/agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)
+
+**Repository:** [agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)
 
 ## 1. Project Explanation and Motivation
 
-Coding agents assemble context from repository instruction files, company documentation, retrieved files, issue text, tool output, and memories left by previous agents. These sources can become stale, conflict with one another, apply only to a different directory or repository, or contain untrusted instructions. Retrieval systems usually optimize for relevance, but relevant information is not necessarily current, applicable, or safe. When invalid context reaches the model, the agent can edit the wrong file, follow an obsolete command, violate repository policy, or waste tokens on duplicate guidance. Developers then have little evidence showing which source affected the task or how to prevent the same failure from recurring.
+Coding agents assemble model context from user tasks, target files, repository instructions, company documentation, retrieved files, tool output, and memories from earlier work. These sources can be stale, duplicated, untrusted, mutually inconsistent, or applicable only to a different repository or directory. Retrieval systems usually optimize for relevance, but relevant information is not necessarily current, applicable, or safe.
 
-We propose a provider-neutral governance layer between context retrieval and model inference. It will record provenance and scope for each candidate, apply deterministic rules for validity, supersession, authority, trust, and duplication, and assemble the smallest approved context bundle for the task. A local investigation interface will show why candidates were admitted, rejected, or quarantined and will support correction and replay of failed tasks. The capstone will compare relevance-only retrieval, prompt-only guidance, and runtime enforcement on controlled coding tasks with known ground truth. Success will be measured through task completion, invalid-context admission, rule violations, replay correction, regressions, latency, and token use.
+Developers also have limited visibility into this process. They may see the user request and final answer without seeing which context candidates were considered, why a source was removed, how conflicts were handled, or the exact context ultimately sent to the model. That makes context-related failures difficult to explain and governance benefits difficult to demonstrate.
+
+We propose a visual context-governance workbench for coding agents. A user can construct a coding task, add candidate context through drag and drop or controlled fixtures, observe deterministic governance decisions, inspect the exact compiled model input, and compare the same task with and without governance. The application will report context and output tokens, latency, policy violations, task outcomes, and false rejections so token reduction is not mistaken for reliability improvement.
+
+The research question is:
+
+> Can visible, application-level context governance prevent invalid context from reaching a coding model and improve controlled coding-task outcomes without unacceptable loss of valid context, latency, or token efficiency?
 
 ## 2. Project Charter
 
 ### Problem statement
 
-Coding agents lack a dependable mechanism for deciding whether retrieved instructions and memories should be allowed into model context. Existing prompts can tell a model to prefer current or trusted information, but they do not enforce admission, remove superseded context, preserve a decision trace, or verify a correction through replay.
+Coding agents lack a dependable and observable mechanism for deciding which retrieved instructions, documents, and memories should enter model context. Prompt instructions can ask a model to prefer current or trusted information, but they do not enforce admission before inference or provide a complete record of what was considered and supplied.
 
-### Target users and context
+### Target users
 
-The primary users are engineers and AI platform owners responsible for coding-agent reliability across one or more repositories. In the target workflow, a developer asks an agent to modify a repository. Before the model call, the proposed layer evaluates candidate instructions, documentation, retrieved files, and prior memories against the active repository, directory, file, and task scope.
+The primary users are engineers and AI platform owners responsible for coding-agent reliability. They need to understand and control the context supplied to a model before it edits a repository or recommends an action.
 
 ### Value proposition
 
-Give coding agents the smallest trustworthy context needed for a task, explain why each source was included or excluded, and measure the resulting reliability, token, and latency impact.
-
-Success should feel like ordinary software debugging: an engineer can identify the context behind a bad change, correct or supersede the source once, find other exposed tasks, and replay affected cases to verify the fix.
+Show developers exactly what context was considered, what governance did to it, what reached the coding model, and how governance changed task quality, token use, and latency.
 
 ### End deliverable
 
-The final deliverable will be a locally deployable developer toolkit with:
+The final deliverable will be a locally deployable visual workbench with:
 
-- A Python SDK that accepts candidate context and returns an approved context bundle with reason-coded decisions
-- SQLite persistence for candidates, versions, tasks, decisions, outputs, corrections, and replay records
-- Deterministic governance for scope, validity, supersession, authority, trust, conflicts, and duplication
-- A provider-neutral interface with one working coding-agent or controlled coding-task integration
-- A lightweight investigation and replay interface
-- Synthetic repository fixtures containing seeded context failures and machine-checkable outcomes
-- A reproducible evaluation harness comparing three context-handling conditions
-- Containerized local setup, tests, documentation, a final report, and a live demonstration
+- Task input, target-file selection, model selection, and a configurable token budget
+- Drag-and-drop candidate context and reproducible scenario fixtures
+- Candidate metadata for provenance, type, scope, authority, trust, validity, and version
+- Deterministic admit, reject, quarantine, deduplication, and priority decisions with reason codes
+- An ordered preview of the exact governed context and complete model input
+- Side-by-side execution of governed and ungoverned versions of the same coding task
+- Model output, proposed code changes, automated task checks, and policy-violation results
+- Separate input-token, output-token, governance-token, latency, and total-usage reporting
+- A provider-neutral model adapter with at least one repeatable local or open-source model
+- A reproducible evaluation harness using controlled coding tasks with known ground truth
 
 ### User workflow
 
-1. A developer starts a coding task against a known repository revision.
-2. The agent integration retrieves candidate context.
-3. The governance layer records provenance, scope, validity, authority, trust, and version relationships.
-4. Deterministic policies admit, reject, quarantine, deduplicate, or prioritize each candidate.
-5. The coding agent receives only the approved context bundle.
-6. The system links the bundle to the model configuration, code change, tool activity, test outcome, latency, and token counts.
-7. An engineer inspects a failure, corrects or supersedes a source, and replays affected tasks.
+1. The user enters a coding task and selects the target files or path scope.
+2. The user drags in documents, rules, memories, or a prepared scenario fixture.
+3. The application extracts content and displays candidate metadata and token counts.
+4. The governance pipeline evaluates scope, validity, supersession, trust, conflicts, and duplication.
+5. Every candidate remains visible with an admit, reject, quarantine, or deduplicate decision and reason code.
+6. The application compiles the approved context within the configured token budget.
+7. The user inspects the exact prompt and context that will be sent to the model.
+8. The application runs matched governed and ungoverned conditions.
+9. The user compares model output, repository changes, tests, violations, tokens, and latency.
 
-## 3. Objectives, Methods, and Success Metrics
+## 3. System Architecture
+
+The governance layer is positioned between raw context collection and model inference. The coding agent receives an approved context bundle and does not read the unfiltered candidate pool directly.
+
+```text
+User / IDE / Task
+        |
+        | Task intent, target files, model, token budget
+        v
++------------------------------------------------------------------+
+| Governance Orchestration Layer                                   |
+|                                                                  |
+|  1. Ingestion and Extraction                                     |
+|     - Document extractor                                         |
+|     - Repository rules scanner                                   |
+|     - Memory or retrieval adapter                                |
+|                         |                                        |
+|                         v                                        |
+|  2. Deterministic Pre-filter and Hierarchy Policy                |
+|     - Path and repository scope                                  |
+|     - Validity and supersession                                  |
+|     - Authority and trust                                        |
+|     - Deduplication and token-budget checks                       |
+|                         |                                        |
+|                         v                                        |
+|  3. Conflict Resolver and Context Compiler                       |
+|     - Quarantine unresolved conflicts                            |
+|     - Order admitted candidates                                  |
+|     - Compile the approved context bundle                        |
++------------------------------------------------------------------+
+        |
+        | Approved governed context plus decision trace
+        v
++------------------------------------------------------------------+
+| Coding Model / Agent                                             |
+| - Receives only the compiled input for its assigned condition    |
+| - Produces output, proposed edits, and tool activity              |
++------------------------------------------------------------------+
+        |
+        v
+Outcome checks, token accounting, latency, and comparison
+```
+
+### Component responsibilities
+
+| Component | Responsibility | Visible evidence |
+|---|---|---|
+| Ingestion and extraction | Normalize manually added or retrieved sources into candidate records | Source, content, version, scope, trust, and raw token count |
+| Deterministic pre-filter | Apply mechanically verifiable policies | Decision, reason code, policy version, and tokens admitted or removed |
+| Conflict resolver | Apply declared precedence and quarantine unresolved high-risk conflicts | Conflicting claims, applied precedence, or quarantine reason |
+| Context compiler | Order admitted candidates and enforce the context budget | Exact approved bundle and compiled token count |
+| Model adapter | Invoke the selected model through a stable interface | Model, parameters, exact request, response, and provider usage |
+| Evaluation runner | Score matched task executions | Tests, policy checks, latency, token use, and paired differences |
+
+The first milestone will prioritize deterministic governance. Model-assisted conflict classification is optional and, if used, will be a separately measured branch with its own model identity, input, output, latency, and token cost. The system will not claim to determine the objective truth of arbitrary natural-language statements.
+
+## 4. Application and Interface Design
+
+The interface mirrors the architecture so users can inspect the full path from candidate context to task outcome.
+
+```text
++--------------------------------------------------------------------------+
+| Task | Target files | Model | Token budget | Scenario                    |
++----------------------+----------------------+----------------------------+
+| Candidate Context    | Governance Trace     | Exact Model Input          |
+|                      |                      |                            |
+| Drag files here      | ADMIT                | System instructions        |
+| Repository rules     | REJECT               | User task                  |
+| Documentation        | QUARANTINE           | Approved context           |
+| Retrieved memories   | DEDUPLICATE          | Token breakdown            |
+| Candidate metadata   | Reason codes         | Ordered payload            |
++----------------------+----------------------+----------------------------+
+| Run without governance             | Run with governance              |
++------------------------------------+-------------------------------------+
+| Ungoverned output                  | Governed output                   |
+| Proposed edits                     | Proposed edits                    |
+| Tests and violations               | Tests and violations              |
+| Input and output tokens            | Input and output tokens           |
+| Latency                            | Governance and total latency      |
++------------------------------------+-------------------------------------+
+```
+
+The UI exposes application inputs and outputs, not the model's private reasoning. Provider-reported token usage will be labeled as exact for that request. Tokenizer calculations used before a request will be labeled as estimates.
+
+## 5. Objectives, Experimental Method, and Metrics
 
 ### Technical objectives
 
-1. Prevent invalid context from reaching a coding agent when the invalidity is established by explicit metadata or controlled scenario ground truth.
-2. Preserve a complete trace from candidate source through governance decision, approved bundle, agent output, repository change, and evaluation outcome.
-3. Make corrections testable by replaying the same task and comparing the original and corrected results.
-4. Reduce unnecessary context without hiding the reliability cost of governance.
-5. Demonstrate a provider-neutral design with stable, versioned contracts.
+1. Prevent invalid context from entering model input when invalidity is established by explicit metadata or controlled ground truth.
+2. Preserve a trace from every candidate through its governance decision, compiled input, model output, and scored outcome.
+3. Make governance behavior understandable through visible reason-coded decisions and exact input inspection.
+4. Measure context reduction without hiding false rejection or task-performance costs.
+5. Demonstrate paired governed and ungoverned executions through a provider-neutral model interface.
 
-### Experimental method
+### Compared conditions
 
-Each controlled task will use the same repository revision, user request, candidate set, tools, and model configuration across three conditions:
+Each controlled task will use the same repository revision, request, candidate set, tools, model, parameters, and trial seed when supported.
 
-1. **Relevance-only retrieval:** All retrieved candidates enter model context.
-2. **Prompt-only governance:** All candidates enter context with instructions telling the model to prefer current, applicable, and trusted information.
-3. **Runtime enforcement:** Invalid or duplicate candidates are rejected or quarantined before model inference.
+1. **No governance:** Every retrieved candidate is placed into model context.
+2. **Governance enabled:** Deterministic policies filter, deduplicate, scope, order, and reason-code candidates before inference.
+3. **Prompt-only governance:** All candidates enter context with instructions to prefer current, applicable, and trusted information. This is an experimental baseline and does not need to dominate the live demonstration.
 
-The initial scenario suite will include:
+The two primary modes in the workbench will be no governance and governance enabled.
 
-- A superseded root instruction that conflicts with current repository configuration
-- A directory-scoped rule retrieved for the wrong service or language
-- Untrusted repository or issue content attempting to become an authoritative instruction
-- A stale handoff memory describing an obsolete architecture or test command
-- Duplicate guidance that increases token use without adding information
+### Initial scenarios
 
-Each scenario will define expected governance decisions, the allowed context set, the expected code or tool outcome, and automated checks before experiments run. Repository tests, lint rules, static assertions, and explicit policy checks will score outcomes. Live-model trials will be repeated under fixed settings where stochastic behavior matters; deterministic or recorded responses will validate storage, policy, trace, and replay behavior.
+- A superseded instruction conflicts with current repository configuration.
+- A directory-scoped rule is retrieved for the wrong target path.
+- Untrusted repository or issue content attempts to become an authoritative instruction.
+- A stale handoff memory names an obsolete architecture or test command.
+- Duplicate guidance consumes tokens without adding information.
+- A clean control contains only valid, applicable context.
+
+Each scenario will define candidate labels, expected governance decisions, allowed context, expected coding or tool outcome, and machine-checkable tests before model trials begin.
 
 ### Success metrics
 
-The proposed notation, equations, measurement policies, thresholds, and open decisions are documented for group review in [Milestone 1 Success Metrics: Group Review Draft](success_metrics_math.md). The table below remains preliminary until that review is complete.
+Detailed notation and measurement policies are maintained in the [Success Metrics Appendix](success_metrics_math.md).
 
-| Metric                         | Definition                                                                                  | Preliminary success target                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Invalid-context admission rate | Invalid candidates included in the model bundle divided by all invalid candidates retrieved | At least 80% lower than relevance-only retrieval                                                     |
-| Repository-rule violation rate | Tasks whose output violates the active scenario rule                                        | At least 50% lower than relevance-only retrieval                                                     |
-| Task-success rate              | Tasks passing scenario tests and required policy checks                                     | Improve over relevance-only retrieval without losing more than 5 percentage points on clean controls |
-| Correction success rate        | Seeded failures resolved after source correction and replay                                 | 100% across the required scenario classes                                                            |
-| Regression rate                | Previously correct clean-control tasks made incorrect after correction                      | No more than 5%                                                                                      |
-| False-rejection rate           | Valid candidates incorrectly rejected                                                       | No more than 5% in controlled fixtures                                                               |
-| Human-review rate              | Tasks requiring quarantine or operator review                                               | Reported separately; not used to hide failures                                                       |
-| Trace completeness             | Required provenance, decision, bundle, model, revision, and outcome fields recorded         | 100% for evaluated tasks                                                                             |
-| Governance latency             | Time added before the model call                                                            | p95 below 100 ms for deterministic checks on the evaluation machine                                  |
-| Net context tokens             | Approved-context tokens plus any governance-model tokens minus baseline context tokens      | Median no greater than baseline, with all components reported                                        |
-| Incident diagnosis time        | Time required to identify the invalid source in a seeded failure                            | Median below 3 minutes using the investigation interface                                             |
-| Decision clarity               | Evaluator correctly identifies why a candidate was admitted, rejected, or quarantined       | At least 90% accuracy on a short scenario review task                                                |
+| Metric | What it establishes |
+|---|---|
+| Invalid-context admission rate | Whether governance prevents known-invalid candidates from reaching the model |
+| False-rejection rate | Whether governance incorrectly removes valid candidates |
+| Task-success rate | Whether the coding task passes its required tests and policy checks |
+| Repository-rule violation rate | Whether model output violates the active scenario rule |
+| Input context tokens | How much context each condition supplies to the task model |
+| Output tokens | Whether output length or behavior changes materially |
+| Governance-model tokens | Any tokens consumed by optional model-assisted governance |
+| Governance and total latency | The preprocessing cost and full user-visible runtime |
+| Decision clarity | Whether an evaluator can correctly explain a governance decision from the UI |
+| Trace completeness | Whether all required candidate, decision, input, model, and outcome evidence is recorded |
 
-Numeric targets are preliminary and will be revisited after the first pilot, but any change will be documented before the final experiment suite is run.
+Token reduction alone will not count as success. It must be interpreted alongside task success, policy violations, and false rejection. Numeric targets remain provisional until a pilot establishes reasonable effect sizes and variance.
 
-## 4. Feasibility, Constraints, Ethics, and Safety
+### Model strategy
 
-### Technology stack and preliminary design framework
+- Use one inexpensive local or open-source model for repeatable demonstrations and most experimental runs.
+- Use one stronger coding model, potentially Codex, for a limited external-validity comparison if access and course constraints permit.
+- Compare governance conditions within the same model. Results across different models will be reported separately and will not be attributed to governance.
+- Record the exact model identifier, configuration, tokenizer or usage source, and software version for every evaluated run.
 
-- **Core and backend:** Python 3.11+, Pydantic or dataclasses, SQLite, and JSONL evidence export
-- **Service boundary:** FastAPI only where it simplifies the integration or user interface
-- **User interface:** Streamlit or a small web interface for trace inspection and replay comparison
-- **Agent integration:** Provider-neutral adapter with one required model-provider implementation
-- **Evaluation:** Pytest, Ruff, mypy, Pandas, and Matplotlib
-- **Packaging:** Docker for the release candidate and one-command local setup
-- **Interface design:** A compact inspection-first layout that prioritizes task history, candidate decisions, reason codes, original-versus-replay comparison, and accessible status labels
+## 6. Feasibility, Constraints, Ethics, and Safety
 
-### Data and licensing constraints
+### Preliminary implementation choices
 
-The project will use synthetic or purpose-built repositories, tasks, instruction files, memories, and expected outcomes. No private company code, customer records, credentials, or personal information will be included. Public dependencies, models, and any reused repository content will be recorded with their licenses and terms before publication.
+- **Application:** A small local web application suitable for drag and drop, structured panels, and side-by-side comparison
+- **Governance core:** Deterministic, versioned policies with structured candidate and decision contracts
+- **Storage:** Lightweight local persistence for tasks, candidates, decisions, model requests, and outcomes
+- **Model integration:** Provider-neutral adapter with one required open-source or local implementation
+- **Evaluation:** Synthetic repositories, automated tests, static assertions, and explicit policy checks
+- **Distribution:** Reproducible local setup, with container packaging as a release goal
 
-Preliminary licensing audit:
+Specific frameworks will be selected after a narrow end-to-end prototype validates the interaction and model path.
 
-| Resource                                    | Expected license or terms                                    | Constraint and action                                                         |
-| ------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| Team-authored synthetic repository fixtures | Team-owned and released under the repository's MIT license   | Avoid copying private or restrictively licensed code into fixtures            |
-| Public repository fixtures, if used         | MIT or Apache 2.0 only unless separately reviewed            | Preserve notices and attribution; record revision and license                 |
-| First hosted model API, to be selected      | Provider terms of use and data-processing terms              | Verify logging, retention, evaluation, and publication permissions before use |
-| Local fallback model, if required           | Prefer Apache 2.0 or another commercially permissive license | Record model card, version, license, and redistribution restrictions          |
+### Constraints and boundaries
 
-### Compute budget and tooling
-
-Development and deterministic evaluation will run on team laptops and GitHub Actions. SQLite and local fixtures avoid hosted database cost. Before repeated live-model experiments, the team will run a pilot to estimate tokens and cost per case. The preliminary API budget cap is **$50 total for the team**, with cached or recorded outputs used only where they do not invalidate the comparison. If projected cost exceeds the cap, secondary repetitions will use a smaller or local model while one provider remains the required end-to-end integration.
+- Use synthetic or purpose-built repositories and context fixtures.
+- Do not include private code, customer data, credentials, or personal information.
+- Record model, dataset, dependency, and public fixture licenses before publication.
+- Do not claim that rejected context caused a model's private reasoning.
+- Do not claim that the system establishes objective truth.
+- Quarantine unresolved high-risk conflicts rather than silently choosing a source.
+- Keep coding tools restricted to disposable evaluation repositories.
 
 ### Principal risks and mitigations
 
-| Risk                                                              | Mitigation                                                                                          | Fallback                                                             |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Natural-language conflicts become open-ended truth judgments      | Use explicit metadata, declared supersession, controlled ground truth, and deterministic predicates | Limit claims to conflicts that the system can verify mechanically    |
-| Coding outcomes are difficult to score                            | Design tasks with tests, lint, static assertions, and explicit rule checks                          | Use a documented human rubric only for residual qualitative outcomes |
-| Governance saves context tokens but spends more on classification | Prefer deterministic checks and account separately for every governance token                       | Restrict model-assisted classification to quarantined cases          |
-| Model stochasticity obscures policy effects                       | Hold inputs and configurations constant and repeat selected trials                                  | Use scripted or recorded responses for system-correctness tests      |
-| Integration work consumes the schedule                            | Support one controlled runner and at most one real agent integration                                | Demonstrate neutrality through stable adapter contracts              |
-| Ambiguous source precedence causes unsafe decisions               | Define a small explicit precedence policy and expose unresolved conflicts                           | Quarantine ambiguous high-risk cases                                 |
+| Risk | Mitigation |
+|---|---|
+| Natural-language conflict resolution becomes open-ended truth judgment | Limit required decisions to explicit metadata, declared supersession, controlled ground truth, and deterministic predicates |
+| Token savings remove necessary information | Measure false rejection, clean-control performance, and task success alongside tokens |
+| Model stochasticity obscures governance effects | Use paired inputs, fixed settings, repeated trials, and per-scenario reporting |
+| Model-assisted governance hides its own cost | Report its model, tokens, latency, and output separately |
+| The UI becomes a general prompt builder | Keep every interaction tied to governance decisions and controlled outcome comparison |
+| Integration work overwhelms the project | Support one controlled coding runner and a narrow model adapter before adding integrations |
 
-### Ethics and safety plan
+## 7. MVP Scope
 
-| Harm or misuse scenario                                           | Guardrail                                                                                                                         | Test                                                                                                                                  |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Prompt injection in repository, issue, or retrieved content       | Mark retrieved content untrusted by default and prevent it from gaining instruction authority without explicit policy             | Run a red-team fixture set containing direct, indirect, encoded, and cross-file instruction attempts; report invalid-admission rate   |
-| Cross-repository or cross-directory leakage                       | Require explicit scope checks before admission and fail closed on missing high-risk scope                                         | Run paired fixtures across repositories, services, and directories; assert that no out-of-scope candidate enters the bundle           |
-| Incorrect code or destructive tool action caused by stale context | Reject expired or superseded sources, restrict demo tools to disposable repositories, and require tests before accepting outcomes | Seed stale commands and policies; verify rejection, run the task in an isolated fixture, and record rule violations and test outcomes |
+### Included
 
-- **Privacy:** Use synthetic or public content, scan fixtures and traces for secrets, minimize logged prompt content, and retain evaluated artifacts only for the course and reproducibility needs.
-- **Fairness and coverage:** The principal disparity risk is uneven performance across programming languages, repository structures, and instruction-writing styles rather than demographic groups. The evaluation will report results separately for at least two language or project structures and will not claim generality beyond tested groups.
-- **Transparency:** Record repository revision, model, prompt, policy, schema, candidates, decisions, and configuration for every evaluated task.
-- **Human oversight:** Quarantine unresolved high-risk conflicts and measure the resulting review burden.
-- **Limitations:** State that the MVP enforces supplied metadata and controlled policies; it does not establish objective truth or authenticate every source.
-- **Balanced reporting:** Report false rejections, regressions, quarantines, latency, and token cost alongside improvements.
+- Visual task setup with target-file scope and token budget
+- Drag-and-drop candidate context and prepared fixtures
+- Structured candidate metadata and token estimates
+- Deterministic governance with stable reason codes
+- Visible candidate decisions and conflict quarantine
+- Exact approved-context and model-input preview
+- Governed and ungoverned execution using the same model configuration
+- Side-by-side outputs, proposed edits, tests, violations, tokens, and latency
+- One local or open-source model integration
+- At least five adversarial scenario classes plus clean controls
+- Automated scenario, policy, schema, integration, and metric tests
+- Reproducible local setup, documentation, final report, and live demonstration
 
-## 5. Scope, Roles, and Timeline
+### Stretch goals
 
-### Included in scope
-
-- Versioned candidate, decision, context-bundle, task, outcome, correction, and replay contracts
-- Deterministic context-governance engine with stable reason codes
-- Synthetic coding repositories and at least five seeded incident classes
-- Relevance-only, prompt-only, and runtime-enforcement conditions
-- One agent integration or controlled coding-task runner
-- Trace inspection, correction, blast-radius lookup, and replay comparison
-- Automated scenario, schema, policy, integration, and replay tests
-- Reliability, latency, token, review-rate, and regression analysis
-- Local or containerized deployment and public documentation
+- Prompt-only governance as an interactive third mode
+- A stronger hosted coding-model comparison
+- Automatic context retrieval based on the task prompt
+- Post-incident source correction and deterministic replay
+- Blast-radius analysis across stored tasks
+- Model-assisted classification for quarantined conflicts
 
 ### Explicitly out of scope
 
 - Automatic truth verification for arbitrary natural-language content
+- Custom model training or fine-tuning
 - A general enterprise agent control plane
-- Support for every coding agent, model provider, repository host, or programming language
-- Learned policy engines, fine-tuning, or custom model training
-- Production multi-tenancy, billing, enterprise identity, or marketplace distribution
+- Support for every model provider, coding agent, repository host, or language
+- Production multi-tenancy, billing, identity, or marketplace distribution
 - Human approval for every candidate or coding task
-- Claims about the model's private internal reasoning
+- Claims about model consciousness, hidden reasoning, or causal attribution from prompt traces alone
 
-### Team roles and responsibilities
+## 8. Roles and Timeline
 
-The following ownership is proposed for planning purposes and must be confirmed by both team members before submission.
+Detailed ownership must be confirmed by all three team members. Proposed workstreams are:
 
-| Team member | Primary ownership                                                                       | Supporting responsibilities                                          |
-| ----------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Bryan Yang  | Product scope, governance policy, evaluation design, metrics, and documentation         | Data contracts, experiments, repository quality, and final report    |
-| Will Liu    | Coding-agent integration, repository fixtures, task runner, and investigation interface | SDK implementation, integration tests, demo flow, and pitch artifact |
-
-Both members will review architecture decisions, pull requests, experiment results, responsible-AI claims, and the final presentation.
+| Workstream | Primary responsibilities |
+|---|---|
+| Governance and evaluation | Candidate contracts, deterministic policies, reason codes, metrics, and experimental controls |
+| Application and integration | Workbench UI, context inspection, model adapter, task runner, and side-by-side execution |
+| Fixtures and communication | Synthetic repositories, scenario ground truth, automated checks, documentation, and presentation |
 
 ### Full-course timeline
 
-| Period      | Checkpoint and output                                                                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Weeks 1-2   | Finalize proposal, use case, team roles, scope, risks, repository requirements, and pitch artifact                                                  |
-| Weeks 3-5   | Freeze data contracts and five scenario fixtures; implement relevance-only and prompt-only baselines; produce the first end-to-end failure trace    |
-| Weeks 6-8   | Implement deterministic governance, reason codes, approved bundles, corrections, and evidence storage                                               |
-| Weeks 9-10  | Add blast-radius lookup, replay, investigation interface, and the working coding-agent integration                                                  |
-| Weeks 11-12 | Run repeated evaluations; analyze reliability, regressions, latency, tokens, cost, and failure cases; complete container packaging                  |
-| Weeks 13-14 | Freeze the release, reproduce results from clean setup, complete documentation and final report, record the demo, and prepare the live presentation |
+| Period | Checkpoint and output |
+|---|---|
+| Weeks 1-2 | Finalize the workbench proposal, architecture, roles, evaluation claims, and pitch artifact |
+| Weeks 3-5 | Prototype task input, candidate loading, exact model-input preview, and one ungoverned coding run |
+| Weeks 6-8 | Implement deterministic governance, reason codes, token accounting, and the governed run |
+| Weeks 9-10 | Complete side-by-side comparison, automated checks, clean controls, and scenario fixtures |
+| Weeks 11-12 | Run paired evaluations and analyze reliability, false rejection, latency, tokens, and failures |
+| Weeks 13-14 | Freeze the release, reproduce from a clean setup, complete the report, and prepare the demonstration |
 
-## 6. GitHub Repository
+## 9. Repository Status and Next Steps
 
-**Repository URL:** [https://github.com/BryanDYang/agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)
+The repository is intentionally planning-focused. It currently contains the active proposal, metric appendix, historical planning archive, course reference materials, and project governance documents. Earlier implementation scaffolding was removed because it represented a superseded project direction.
 
-| Required item       | Current status                                                        |
-| ------------------- | --------------------------------------------------------------------- |
-| README              | Present; must be aligned with the final coding-agent direction        |
-| Issue labels        | Must be verified or created before submission                         |
-| Code of conduct     | Present                                                               |
-| Contributing guide  | Present                                                               |
-| Basic CI smoke test | Present through GitHub Actions; final passing status must be verified |
-| License             | Present, MIT                                                          |
+### Current blockers
 
-Repository work will use feature branches, pull-request review, automated lint and tests, versioned fixtures, and reproducible commands. Secrets and generated experiment artifacts will not be committed.
+- Confirm team roles and ownership.
+- Freeze the initial source-precedence policy and reason-code vocabulary.
+- Select the local or open-source model and the optional stronger comparison model.
+- Decide which exact context fields can be edited in the workbench.
+- Validate the first scenario and paired task before fixing final metric thresholds.
 
-## 7. Selected AI Engineering Focus Areas
+### Next steps
 
-### Data
+1. Review and approve this proposal as the milestone 1 source of truth.
+2. Confirm team roles, model choices, and precedence policy.
+3. Create a low-fidelity visual design based on the interface layout in this document.
+4. Implement one narrow end-to-end scenario with a valid rule, stale rule, and out-of-scope rule.
+5. Run matched governed and ungoverned trials and verify the full evidence trace.
+6. Use the pilot to finalize metric thresholds and the remaining scenario suite.
 
-- Build a small dataset from labeled examples curated as synthetic repository fixtures
-
-### Model and system
-
-- Retrieval augmented generation
-- Tool use or agentic orchestration
-
-### Application and deployment
-
-- Lightweight user interface
-- Local deployment only for the MVP
-- Containerized deployment
-
-### Evaluation and responsible AI
-
-- Custom test suite beyond the baseline harness
-- Robustness tests for edge cases
-- Safety and hallucination checks where applicable
-- Latency and cost profiling
-
-## 8. Weekly Check-In and Blockers
-
-### Progress made
-
-- Created the repository scaffold, contribution and conduct documents, MIT license, and GitHub Actions smoke test
-- Compared candidate agent use cases and selected coding-agent context governance as the working direction
-- Defined the target user, product boundary, preliminary architecture, controlled failure classes, baselines, and evaluation metrics
-- Drafted a provider-neutral contract for candidate context, governance decisions, approved bundles, and replay
-- Identified token efficiency as a measured outcome rather than an unsupported product claim
-
-### Top blockers and risks
-
-- Team ownership must be confirmed before submission.
-- Source precedence among company, repository, directory, file, and task instructions must be frozen before expected fixture outcomes can be finalized.
-- The first coding-agent integration and model provider must be selected.
-- Existing repository documentation still contains material from an earlier project direction and must be reconciled.
-- GitHub issue labels and the current CI result must be verified.
-
-### Planned next steps
-
-1. Confirm roles, integration choice, model provider, and precedence policy.
-2. Reconcile README and architecture documents with the coding-agent direction.
-3. Implement one narrow fixture and run the three conditions end to end.
-4. Use the pilot to confirm metric thresholds, latency measurement, and API cost.
-5. Freeze the initial scenario definitions and expected outcomes.
-6. Complete and review the six-slide pitch deck.
-
-## 9. Group Contribution Plan for the Next Milestone
-
-| Task                                               | Proposed owner | Dependency or risk                              |
-| -------------------------------------------------- | -------------- | ----------------------------------------------- |
-| Finalize schemas and SDK boundary                  | Bryan Yang     | Must agree on integration contract              |
-| Build repository fixtures and task runner          | Will Liu       | Scenarios need machine-checkable outcomes       |
-| Specify governance precedence and reason codes     | Bryan Yang     | Ambiguous conflicts require quarantine behavior |
-| Implement first agent integration                  | Will Liu       | Provider and agent choice not yet final         |
-| Implement baseline evaluation and token accounting | Bryan Yang     | Pilot needed to set final thresholds            |
-| Build initial trace and replay interface           | Will Liu       | Depends on stable storage schema                |
-| Review tests, documentation, and demo flow         | Both           | Earlier project-direction text must be removed  |
-
-## 10. Pitch Artifact
-
-**Selected option:** Pitch deck with six slides or fewer
-**Working artifact:** To be created. The file `contexts/milestone 1/CIS-5980_Phase1.pptx` is professor-provided course material and is not the team pitch.
-
-The final deck should contain:
-
-1. Problem and firsthand motivation
-2. Target user and failure scenario
-3. Proposed governance layer and workflow
-4. Ambitious but bounded MVP
-5. Evaluation design, success targets, and token/latency accounting
-6. Timeline, team ownership, risks, and requested teaching-staff feedback
-
-## 11. Requested Teaching-Staff Feedback and Next Steps
+## 10. Requested Teaching-Staff Feedback
 
 The team requests feedback on:
 
-- Whether coding-agent context governance is sufficiently differentiated and appropriately scoped for two people
-- Whether the three-condition comparison supports the proposed reliability claims
-- Whether the preliminary success thresholds are meaningful and achievable
-- Whether deterministic metadata-driven governance is an acceptable boundary for the capstone
-- Whether one real integration plus controlled repository fixtures provides enough implementation depth
+- Whether a visual coding-agent context-governance workbench is sufficiently differentiated and appropriately scoped
+- Whether paired governed and ungoverned executions support the proposed reliability claims
+- Whether prompt-only governance should remain a required experimental condition
+- Whether deterministic metadata-driven governance is an acceptable boundary for the MVP
+- Whether one open-source model plus a limited stronger-model comparison provides adequate implementation depth
+- Whether the proposed task, safety, token, latency, and false-rejection metrics are sufficient
 
-After receiving feedback, the team will record requested changes, owners, and due dates here before beginning the next milestone.
+## 11. Submission Readiness Checklist
 
-## 12. Submission Readiness Checklist
-
-- [ ] Confirm the proposed team roles with Bryan Yang and Will Liu
-- [ ] Confirm the coding-agent integration and model provider
-- [ ] Replace preliminary metric targets if the pilot supports better thresholds
-- [ ] Verify GitHub issue labels and passing CI
-- [ ] Align README and repository documentation with this proposal
-- [ ] Update the six-slide pitch deck to match this proposal
-- [ ] Record teaching-staff feedback and next steps when available
-- [ ] Export the report and pitch artifact as one PDF according to the Canvas submission instructions
+- [ ] Confirm roles with all team members
+- [ ] Confirm the first model integration and optional comparison model
+- [ ] Freeze the precedence policy and reason codes
+- [ ] Review the proposed metric definitions and thresholds
+- [ ] Create the six-slide pitch deck from this proposal
+- [ ] Verify required repository settings and issue labels
+- [ ] Record teaching-staff feedback and resulting decisions
+- [ ] Export the required submission artifacts according to Canvas instructions
