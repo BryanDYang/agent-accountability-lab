@@ -1,16 +1,20 @@
 # Agent Accountability Lab
 
-Agent Accountability Lab is a capstone project exploring context governance for reliable coding agents. The proposed system makes candidate context, governance decisions, exact model input, and governed-versus-ungoverned outcomes visible in a local developer workbench.
+Agent Accountability Lab is a capstone project exploring observable context governance for reliable coding agents. The proposed workbench shows what candidate context was considered, which governance decisions were made, what exact input reached the coding model, and how governed and ungoverned runs differed.
 
-The repository is currently in the planning phase. Implementation scaffolding will be added after the milestone 1 scope and technical contracts are approved.
+The repository is currently focused exclusively on the Milestone 1 submission: the problem, target users, value proposition, high-level architecture, evaluation plan, team responsibilities, feasibility, risks, and pitch artifacts. Implementation decisions and prototype work are intentionally deferred to Milestone 2.
 
 ## Source of truth
 
 The authoritative milestone 1 scope is [Project Proposal](docs/milestone_1/project_proposal.md).
 
-Metric definitions and proposed decision thresholds are maintained separately in the [Success Metrics Appendix](docs/milestone_1/success_metrics_math.md).
+Milestone 1 includes a concise evaluation direction in the project proposal. Detailed formulas, statistical methods, and threshold calibration are deferred to the draft [Milestone 2 Evaluation Plan](docs/milestone_2/evaluation_plan.md).
+
+Deferred project-readiness decisions, repository setup, model integration, pilot evaluation, and final threshold calibration are tracked in the [Milestone 2 TODO](docs/milestone_2/TODO.md).
 
 The interactive product concept is available as a dependency-free [HTML mockup](docs/mockup/index.html). Open the file directly in a browser to explore the candidate context, governance trace, exact model input, and governed-versus-ungoverned comparison.
+
+The proposed six-slide presentation is available as a [Milestone 1 Pitch Deck Draft](docs/milestone_1/pitch_deck.md). Export and visual verification remain submission tasks.
 
 Historical planning documents are retained in [docs/archive](docs/archive/README.md) for decision history only. They are not current requirements.
 
@@ -19,10 +23,14 @@ Historical planning documents are retained in [docs/archive](docs/archive/README
 ```text
 docs/
 ├── mockup/
-│   └── index.html
+│   ├── index.html
+│   └── capstone_workflow_diagram.drawio
 ├── milestone_1/
-│   ├── project_proposal.md
-│   └── success_metrics_math.md
+│   ├── pitch_deck.md
+│   └── project_proposal.md
+├── milestone_2/
+│   ├── TODO.md
+│   └── evaluation_plan.md
 └── archive/
     └── milestone_1/
 ```

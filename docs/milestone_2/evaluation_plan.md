@@ -1,7 +1,7 @@
-# Milestone 1 Success Metrics: Group Review Draft
+# Milestone 2 Evaluation Plan
 
-**Status:** Proposed, not yet approved  
-**Purpose:** Define what evidence would support the Milestone 1 claims before fixing final thresholds or running the final experiment suite.
+**Status:** Draft deferred from Milestone 1  
+**Purpose:** Develop the detailed measurement policies, statistical methods, and final decision thresholds after the first end-to-end pilot.
 
 This document separates three questions that should not be collapsed:
 
@@ -13,7 +13,7 @@ The equations use LaTeX with dollar-sign delimiters for GitHub-style Markdown co
 
 ## 1. Proposed claims
 
-Milestone 1 should evaluate these claims separately:
+The Milestone 2 pilot and later evaluation should assess these claims separately:
 
 1. Runtime governance prevents invalid context from reaching the model.
 2. Preventing invalid context reduces rule violations and improves task outcomes on adversarial scenarios.
@@ -235,7 +235,7 @@ The group must decide whether a 5 percentage-point loss is acceptable and whethe
 
 ## 6. Deferred stretch-goal metrics
 
-Correction, replay, and blast-radius analysis are stretch goals rather than Milestone 1 success gates. If implemented, they must use prespecified fixtures and preserve the task request, repository revision, tools, candidate set, and model configuration. Their results must be labeled exploratory and must not substitute for the primary governed-versus-ungoverned comparison.
+Correction, replay, and blast-radius analysis are stretch goals rather than primary evaluation gates. If implemented, they must use prespecified fixtures and preserve the task request, repository revision, tools, candidate set, and model configuration. Their results must be labeled exploratory and must not substitute for the primary governed-versus-ungoverned comparison.
 
 ## 7. Valid-context preservation and human review
 
@@ -407,7 +407,7 @@ $$
 {C_{\mathrm{incremental}}}
 $$
 
-For Milestone 1, ROI should be exploratory rather than a success gate. If $w_k$ cannot be independently justified, report a sensitivity analysis across plausible values instead of a single ROI.
+ROI should remain exploratory rather than a success gate. If $w_k$ cannot be independently justified, report a sensitivity analysis across plausible values instead of a single ROI.
 
 ## 11. Statistical analysis
 
