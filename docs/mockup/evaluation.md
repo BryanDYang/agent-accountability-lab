@@ -79,7 +79,7 @@ These metrics evaluate whether filtering and prioritizing context actually produ
 ### Task Success Rate ($\text{Pass}@1$ / Resolved Rate)
 
 $$
-\text{Pass}@1 = \frac{\text{Number of tasks where all unit \& integration tests pass on first attempt}}{\text{Total number of evaluation tasks}}
+\text{Pass}@1 = \frac{\text{Number of tasks where all unit and integration tests pass on first attempt}}{\text{Total number of evaluation tasks}}
 $$
 
 **Measurement Method:** Run test suites in the sandbox environment immediately following the agent's first code edit.
