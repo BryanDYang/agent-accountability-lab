@@ -64,6 +64,12 @@ To objectively evaluate whether the governance layer improves agent performance,
 | **6. Token Budget Saturation** | Low (1–2 days) | Medium | High (Token Counters) | Budget Adherence % |
 | **7. Multi-Turn Session Drift** | Medium (4–6 days) | High | High (Integration Test) | Drift Regression Rate |
 
+<br>
+<br>
+<hr>
+<br>
+<br>
+
 # Benchmarking Performance and Reliability
 
 ## 1. Functional Code Quality & Rule Compliance
