@@ -1,6 +1,6 @@
-# Agent Accountability Lab
+# Guardian Agent
 
-Agent Accountability Lab is a capstone project exploring observable context governance for reliable coding agents. The proposed workbench shows what candidate context was considered, which governance decisions were made, what exact input reached the coding model, and how governed and ungoverned runs differed.
+Guardian Agent is a capstone project exploring observable context governance for reliable coding agents. The proposed workbench shows what candidate context was considered, which governance decisions were made, what exact input reached the coding model, and how governed and ungoverned runs differed.
 
 The repository is currently focused exclusively on the Milestone 1 submission: the problem, target users, value proposition, high-level architecture, evaluation plan, team responsibilities, feasibility, risks, and pitch artifacts. Implementation decisions and prototype work are intentionally deferred to Milestone 2.
 
