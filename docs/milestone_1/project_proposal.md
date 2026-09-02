@@ -242,12 +242,12 @@ Pricing and hardware figures reflect research conducted in September 2026 and wi
 
 ### Data and licensing plan
 
-- **Fixture sources:** Use team-authored synthetic repositories, tasks, rules, documents, memories, and expected outcomes. Public examples may be adapted only when their licenses permit redistribution and attribution requirements are satisfied.
-- **Access and ownership:** Store approved fixtures in the project repository so every team member can inspect and reproduce them. Record the author or upstream source for every fixture.
-- **Permitted use:** Use fixtures only for course development, evaluation, demonstration, and publication under the repository's declared license. Do not imply that synthetic results represent production organizations or users.
-- **Private-data exclusions:** Do not use employer code, customer data, private chats, credentials, proprietary documentation, student records, or other personal information. Replace realistic identifiers with synthetic values before committing artifacts.
-- **Third-party tracking:** Maintain a source and license inventory for dependencies, model weights or APIs, public datasets, icons, fonts, and adapted fixture material before the first fixture set is frozen.
-- **Model terms:** Record model name, version, provider, license or terms of use, access date, and redistribution restrictions for every evaluated model.
+1. **Fixture sources and origin:** All project fixtures shall consist primarily of team-authored synthetic repositories, tasks, operational rules, synthetic documents, agent memories, and expected evaluation outcomes. Public or third-party examples may be incorporated only when their explicit licenses permit redistribution and modification and all upstream copyright, attribution, and license-notice obligations have been satisfied before adoption.
+2. **Access, storage, and ownership:** All validated and approved fixtures must be stored directly within the project repository so every team member can independently review, inspect, and reproduce evaluation results. Each fixture commit must include formal provenance metadata recording the author and creation date or the corresponding upstream source.
+3. **Permitted scope of use and disclaimers:** Fixtures and derived assets covered under this plan are authorized exclusively for course development, systematic evaluation, academic demonstrations, and publication in accordance with the repository's declared open or proprietary license. Synthetic results, test cases, and simulated user behaviors must not be marketed, represented, or construed as reflective of actual production organizations, commercial systems, or real individuals.
+4. **Exclusion of private and proprietary data:** Employer codebases, proprietary enterprise documentation, customer data, internal communications, authentication credentials, student records, and personally identifiable information are strictly forbidden. Contributors must sanitize all artifacts and replace realistic names, domains, and identifiers with verified synthetic placeholders before committing files to the repository.
+5. **Third-party tracking and inventory management:** Before freezing any benchmark or fixture release, the project team must compile and maintain a centralized third-party asset inventory. The registry must account for all external software dependencies, public datasets, model weights, third-party APIs, icons, fonts, and adapted reference materials, identifying the exact source URL, active license terms, and required attribution statements.
+6. **Model terms and evaluation governance:** Every foundation or fine-tuned model evaluated within this initiative must be logged with complete compliance metadata. The record must detail the model name, exact version tag, provider or hosting vendor, governing license or terms of service, access date, and any known restrictions on commercial reuse, output redistribution, or derivative works.
 
 ### Ethics and safety plan
 
@@ -320,23 +320,23 @@ Pricing and hardware figures reflect research conducted in September 2026 and wi
 
 The team assigns one primary owner to each workstream while retaining shared review responsibility for architecture, evaluation claims, safety decisions, and submission artifacts.
 
-| Team member       | Primary workstream                    | Responsibilities                                                                                                                      |
-| ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Will Liu          | Architecture and governance           | System architecture, candidate contracts, deterministic policies, precedence rules, reason codes, and assigned proposal requirements |
-| Bryan Yang        | Application and model integration     | Repository setup, workbench UI, context inspection, model adapter, task runner, side-by-side execution, and pitch-deck draft          |
-| Guadalupe Cantera | Evaluation, fixtures, and quality     | Scenario ideas, synthetic fixtures, ground truth, automated checks, evaluation review, QA/QC, and assigned proposal requirements      |
+| Team member       | Primary workstream                | Responsibilities                                                                                                                     |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Will Liu          | Architecture and governance       | System architecture, candidate contracts, deterministic policies, precedence rules, reason codes, and assigned proposal requirements |
+| Bryan Yang        | Application and model integration | Repository setup, workbench UI, context inspection, model adapter, task runner, side-by-side execution, and pitch-deck draft         |
+| Guadalupe Cantera | Evaluation, fixtures, and quality | Scenario ideas, synthetic fixtures, ground truth, automated checks, evaluation review, QA/QC, and assigned proposal requirements     |
 
 ### Next-milestone ownership
 
-| Milestone 2 task                                                        | Primary owner       | Review or support             |
-| ----------------------------------------------------------------------- | ------------------- | ----------------------------- |
-| Freeze the architecture, candidate schema, and governance reason codes  | Will Liu            | Bryan and Guadalupe           |
-| Build the first UI-to-model vertical slice and local-model adapter      | Bryan Yang          | Will                          |
-| Define the initial fixtures, expected outcomes, and evaluation rubric   | Guadalupe Cantera   | Will and Bryan                |
-| Implement policy, schema, task-outcome, and trace-consistency tests     | Guadalupe Cantera   | Bryan                         |
-| Maintain repository setup, continuous integration, and developer setup | Bryan Yang          | Will                          |
-| Review pilot evidence and approve final thresholds                      | Guadalupe Cantera   | Will and Bryan                |
-| Maintain milestone documentation and prepare the checkpoint update      | Bryan Yang          | Will and Guadalupe            |
+| Milestone 2 task                                                       | Primary owner     | Review or support   |
+| ---------------------------------------------------------------------- | ----------------- | ------------------- |
+| Freeze the architecture, candidate schema, and governance reason codes | Will Liu          | Bryan and Guadalupe |
+| Build the first UI-to-model vertical slice and local-model adapter     | Bryan Yang        | Will                |
+| Define the initial fixtures, expected outcomes, and evaluation rubric  | Guadalupe Cantera | Will and Bryan      |
+| Implement policy, schema, task-outcome, and trace-consistency tests    | Guadalupe Cantera | Bryan               |
+| Maintain repository setup, continuous integration, and developer setup | Bryan Yang        | Will                |
+| Review pilot evidence and approve final thresholds                     | Guadalupe Cantera | Will and Bryan      |
+| Maintain milestone documentation and prepare the checkpoint update     | Bryan Yang        | Will and Guadalupe  |
 
 ### Full-course timeline
 
@@ -384,21 +384,21 @@ The team requests feedback on:
 
 ## 11. Milestone 1 Submission Checklist
 
-The following items are the proposed submission checklist. The team must verify them against the official Canvas instructions and grading rubric before treating the list as authoritative. 
+The following items are the proposed submission checklist. The team must verify them against the official Canvas instructions and grading rubric before treating the list as authoritative.
 
 ### Proposal and planning -> convert the milestone 1 deliverable draft to google doc
 
 - [X] Consolidate the project explanation and motivation into the two-paragraph format named in the grading rubric.
 - [X] Add a weekly check-in with progress made, top blockers or risks, and planned next steps. -> @weekly_journal.md
-- [x] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. Completed in Roles and Timeline.
-- [x] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. Owner: Bryan. Completed in Preliminary implementation choices.
-- [x] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. Owner: Guadalupe. Completed in Rough compute and tooling budget.
-- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. Owner: Will.
-- [x] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards. Owner: Guadalupe. Completed in Ethics and safety plan.
-- [x] Add an explicit early timeline checkpoint to confirm fixture access, ownership, permitted use, private-data exclusions, and license-inventory responsibilities before evaluation fixtures are frozen. Owner: Bryan researches; group reviews. Completed in the Full-course timeline.
+- [X] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. Completed in Roles and Timeline.
+- [X] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. Owner: Bryan. Completed in Preliminary implementation choices.
+- [X] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. Owner: Guadalupe. Completed in Rough compute and tooling budget.
+- [X] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. Owner: Will. Completed in Data and licensing plan.
+- [X] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards. Owner: Guadalupe. Completed in Ethics and safety plan.
+- [X] Add an explicit early timeline checkpoint to confirm fixture access, ownership, permitted use, private-data exclusions, and license-inventory responsibilities before evaluation fixtures are frozen. Owner: Bryan researches; group reviews. Completed in the Full-course timeline.
 
 ### Submission artifacts
 
-- [x] Draft a pitch deck with six slides or fewer. Owner: Bryan. Completed in `docs/milestone_1/pitch_deck.md`.
+- [X] Draft a pitch deck with six slides or fewer. Owner: Bryan. Completed in `docs/milestone_1/pitch_deck.md`.
 - [ ] Export the pitch deck, visually verify the final artifact, and import it into Google Slides. Owner: group.
 - [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions. Owner: group.
