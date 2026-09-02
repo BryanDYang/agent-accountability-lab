@@ -211,9 +211,9 @@ Token reduction alone will not count as success. It must be interpreted alongsid
 - **Front end:** React and TypeScript with Vite for a local visual workbench; semantic HTML and accessible interactions remain requirements regardless of framework.
 - **Back end:** Python 3.12 with FastAPI for task setup, deterministic governance, model invocation, and evaluation endpoints.
 - **Storage:** SQLite for local tasks, candidates, decisions, exact model requests, and outcomes; content hashes link immutable evidence records without requiring production infrastructure.
-- **Model integration:** A thin provider-neutral adapter with an OpenAI-compatible request contract; the first local or open-source model and runtime will be selected in Milestone 2.
-- **Evaluation:** Pytest for scenario, policy, schema, and metric checks; Playwright for the narrow end-to-end workbench flow; controlled JSON fixtures define expected decisions and outcomes.
-- **Design framework:** The current dependency-free HTML mockup and Draw.io architecture remain the low-fidelity design sources; implementation styling will use CSS custom properties and a small project-owned component vocabulary before considering a larger UI library.
+- **Model integration:** A thin provider-neutral adapter with an OpenAI-compatible request contract; the first local or open-source model and runtime will be selected in Milestone 2. <- too fuzzy
+- **Evaluation:** Pytest for scenario, policy, schema, and metric checks; Playwright for the narrow end-to-end workbench flow; controlled JSON fixtures define expected decisions and outcomes. <- word it more detail how we'll address this in phase 2
+- **Design framework:** The current dependency-free HTML  in mockup and Draw.io architecture remain the low-fidelity design sources; implementation styling will use CSS custom properties and a small project-owned component vocabulary before considering a larger UI library.
 - **Distribution:** Reproducible local setup first, with container packaging as a release goal.
 
 Final framework commitments will be made after a narrow end-to-end prototype validates the interaction and model path.
@@ -367,21 +367,21 @@ The team requests feedback on:
 
 ## 11. Milestone 1 Submission Checklist
 
-The following items are the proposed submission checklist. The team must verify them against the official Canvas instructions and grading rubric before treating the list as authoritative.
+The following items are the proposed submission checklist. The team must verify them against the official Canvas instructions and grading rubric before treating the list as authoritative. 
 
-### Proposal and planning
+### Proposal and planning -> convert the milestone 1 deliverable draft to google doc
 
 - [X] Consolidate the project explanation and motivation into the two-paragraph format named in the grading rubric.
-- [ ] Add a weekly check-in with progress made, top blockers or risks, and planned next steps.
-- [ ] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks.
-- [ ] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional.
-- [ ] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions.
-- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking.
-- [ ] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards.
-- [ ] Add an explicit early timeline checkpoint for data or fixture access and licensing review.
+- [X] Add a weekly check-in with progress made, top blockers or risks, and planned next steps. -> @weekly_journal.md
+- [X] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. -> General milestone by milestone via task -> Will: arch + checklist items Guadalupe: ideas + qa/qc + checklist items Bryan: repo setup + checklist items
+- [ ] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. <- bryan
+- [ ] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. <- Guadalupe
+- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. <- Will
+- [ ] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards.  <- Guadalupe
+- [ ] Add an explicit early timeline checkpoint for data or fixture access and licensing review. <- MIT (research Bryan)
 
 ### Submission artifacts
 
-- [ ] Draft a pitch deck with six slides or fewer, or a three-to-five-minute concept video.
-- [ ] Export the pitch deck or concept video and visually verify the final artifact.
-- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions.
+- [ ] Draft a pitch deck with six slides or fewer, or a three-to-five-minute concept video. <- Bryan draft and put it in the google doc
+- [ ] Export the pitch deck or concept video and visually verify the final artifact. <- group
+- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions. <- group
