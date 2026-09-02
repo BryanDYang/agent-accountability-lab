@@ -211,8 +211,8 @@ Token reduction alone will not count as success. It must be interpreted alongsid
 - **Front end:** React and TypeScript with Vite for a local visual workbench; semantic HTML and accessible interactions remain requirements regardless of framework.
 - **Back end:** Python 3.12 with FastAPI for task setup, deterministic governance, model invocation, and evaluation endpoints.
 - **Storage:** SQLite for local tasks, candidates, decisions, exact model requests, and outcomes; content hashes link immutable evidence records without requiring production infrastructure.
-- **Model integration:** A thin provider-neutral adapter with an OpenAI-compatible request contract; the first local or open-source model and runtime will be selected in Milestone 2. <- too fuzzy
-- **Evaluation:** Pytest for scenario, policy, schema, and metric checks; Playwright for the narrow end-to-end workbench flow; controlled JSON fixtures define expected decisions and outcomes. <- word it more detail how we'll address this in phase 2
+- **Model integration:** Use Qwen2.5-Coder 7B Instruct as the first repeatable local coding model, served through Ollama's OpenAI-compatible endpoint. The application will call it through a provider-neutral adapter that records the model tag, runtime version, request parameters, exact messages, response, latency, and token counts for every run. Phase 2 will first prove one complete local run through this adapter before adding an optional hosted comparison model.
+- **Evaluation:** In Phase 2, define a versioned JSON fixture schema containing the task, disposable repository revision, target paths, candidate context and metadata, expected governance decisions, active repository rules, and machine-checkable task outcomes. Pytest will validate the schema and deterministic policies, materialize each disposable repository, run matched governed and ungoverned conditions with the same model settings, execute task tests and static policy assertions, and write one trace and metric record per run. Playwright will exercise the user-visible path from loading a fixture through inspecting decisions and exact model input to launching both conditions and comparing their results. The first Phase 2 checkpoint is one end-to-end scenario whose UI results, saved trace, and Pytest outcome agree before the team expands the fixture suite.
 - **Design framework:** The current dependency-free HTML  in mockup and Draw.io architecture remain the low-fidelity design sources; implementation styling will use CSS custom properties and a small project-owned component vocabulary before considering a larger UI library.
 - **Distribution:** Reproducible local setup first, with container packaging as a release goal.
 
@@ -222,17 +222,23 @@ All choices are provisional. Milestone 1 establishes a credible implementation d
 
 ### Rough compute and tooling budget
 
-The initial plan assumes each team member can use a modern development laptop. The minimum local-model target is a machine with 16 GB of memory and approximately 20 GB of free storage for a quantized model, dependencies, fixtures, and run artifacts. If available hardware cannot run the selected model reliably, the team will use a bounded hosted-model path through the same adapter rather than changing the experiment design.
+The project is designed to rely primarily on existing team hardware and free, open-source development tools. The team assumes each member has access to a modern development laptop with at least 16 GB of memory, enough to run the quantized local coding model that receives governed or ungoverned context and produces the code edit under evaluation. The laptop also needs approximately 25 GB of free storage for the downloaded model, Python and Node dependencies, Playwright's browser binary, team-authored fixtures, and recorded governance decisions and model outputs. No new hardware purchases are planned.
 
-The first evaluation estimate is 60 task-model runs: five adversarial scenario classes plus one clean control, two primary conditions, and five repeated trials per scenario-condition pair. Pilot results may change the repetition count before the final evaluation. Governance runs, failed setup attempts, and optional comparison-model runs will be reported separately rather than hidden inside the task-model total.
+Qwen2.5-Coder 7B Instruct served through Ollama is the initial baseline selected in the model-integration plan above. The hardware envelope also leaves room to evaluate a larger quantized model if the team chooses to do so: Ollama lists the 4-bit Qwen2.5-Coder 14B artifact at roughly 9 GB, while OpenAI describes gpt-oss-20b as capable of running within 16 GB of memory. These are feasibility examples, not additional model commitments. Phase 2 will confirm actual memory, storage, latency, and stability on available team hardware. If the baseline cannot run reliably, the team will use limited hosted inference through the same provider-neutral adapter.
 
-| Budget item                                          |                                                                Provisional limit |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------: |
-| Open-source development tools and repository hosting |                                                                               $0 |
-| Local model execution                                |                         Existing team hardware; no new hardware purchase assumed |
-| Hosted model API usage                               |            $50 total project cap unless the team approves a documented exception |
-| Optional deployment                                  | $0 preferred; no more than $20 total for a short-lived demonstration environment |
-| Storage                                              |                   Local SQLite and repository fixtures; no paid database assumed |
+For the initial pilot, the team estimates approximately 36 primary task-model runs. This comes from six scenario classes, including five adversarial scenarios and one clean control, two primary conditions, and three repeated trials for each scenario-condition pair. Three trials are an initial planning estimate rather than a statistically derived requirement because the system does not yet have an effect-size or variance estimate. Pilot results will determine whether the final evaluation requires additional repetitions. Governance runs, failed setup attempts, and optional comparison-model runs will be reported separately rather than hidden inside the task-model total.
+
+Most evaluation runs are expected to use the local model, keeping inference costs near zero. Hosted-model usage will be limited primarily to development needs and an optional stronger-model comparison. Based on provider pricing reviewed in September 2026, a 36-run pilot is expected to cost only a few dollars under ordinary prompt and response sizes, but actual cost will depend on measured token usage. The team will use a $20 total API spending cap unless additional spending is explicitly approved. The application is intended to run locally, so deployment cost is expected to remain $0 on a free hosting tier, with up to $10 reserved for a short-lived demonstration environment if needed.
+
+| Budget item                                          | Provisional limit                                                                                   |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Open-source development tools and repository hosting | $0                                                                                                  |
+| Local model execution                                | Existing team hardware; no new hardware purchase assumed                                            |
+| Hosted model API usage                               | $20 total project cap unless the team approves a documented exception                               |
+| Optional deployment                                  | $0 preferred using a free hosting tier; up to $10 total for a short-lived demonstration environment |
+| Storage                                              | Local SQLite and repository fixtures; no paid database assumed                                      |
+
+Pricing and hardware figures reflect research conducted in September 2026 and will be reverified before final Milestone 2 threshold calibration because API and hosting prices can change. Sources: [Claude Platform Pricing](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI API Pricing](https://developers.openai.com/api/docs/pricing), [Qwen2.5-Coder 14B on Ollama](https://ollama.com/library/qwen2.5-coder:14b), and [Introducing gpt-oss](https://openai.com/index/introducing-gpt-oss/).
 
 ### Data and licensing plan
 
@@ -245,13 +251,13 @@ The first evaluation estimate is 60 task-model runs: five adversarial scenario c
 
 ### Ethics and safety plan
 
-- **Privacy:** Use synthetic tasks and disposable repositories. Inspect committed fixtures for secrets and personal information before release.
-- **Representativeness and bias:** The controlled scenario suite will cover specific context failures, not the full range of repositories, languages, organizations, or developers. Results will be reported per scenario and will not be generalized beyond the tested conditions.
-- **Misuse:** The workbench is intended for defensive evaluation and debugging. It will not include credential harvesting, persistence, exploitation, or deployment against third-party repositories.
-- **Harmful code output:** Run generated edits and commands only in disposable evaluation repositories with restricted tools. Do not connect the coding runner to production systems or real credentials.
-- **Credential exposure:** Exclude secrets from fixtures, redact sensitive values from visible traces, and prevent model tools from receiving ambient credentials that are unnecessary for the task.
-- **Governance limits:** Do not claim that the system determines objective truth or reveals private model reasoning. Quarantine unresolved high-risk conflicts and distinguish delivered instructions from observed agent compliance.
-- **Release safeguards:** Review fixture licenses, scan published artifacts, document known limitations, and require all automated tests and policy checks to pass before the demonstration release.
+- **Privacy:** Development and evaluation will use synthetic, purpose-built, or licensed public repositories, coding tasks, and context fixtures, per the data and licensing plan above. Fixtures will not include employer or customer code, private communications, student records, personal information, or other proprietary data. Because the workbench records candidate context and model-input traces, only information necessary for the controlled experiment will be stored, and the evidence store will stay local to each team member's machine rather than shared or hosted.
+- **Representativeness and bias:** The evaluation scenarios are designed to test specific context-governance failures: a superseded instruction that conflicts with current configuration, a rule retrieved for the wrong path scope, untrusted content attempting to become an authoritative instruction, a stale handoff memory naming an obsolete command, and duplicate guidance. These scenarios will not represent every repository, programming language, organization, or type of coding-agent failure. Results will therefore be reported by scenario and will not be generalized beyond the conditions tested.
+- **Misuse:** The workbench is intended as a defensive tool for evaluating and debugging coding-agent context. It will not be presented as a general security system or a mechanism for determining whether arbitrary information is objectively true. Evaluation scenarios will not involve credential theft, persistence, exploitation, or attacks against third-party systems.
+- **Harmful code output:** Model-generated code and commands will be treated as untrusted until evaluated. Generated changes will run only inside disposable evaluation repositories with a restricted toolset: file edits and test execution inside the evaluation repository, no network access, no arbitrary package installation, and no shell command outside an explicit allow-list. Generated changes will be checked using the scenario's automated tests and policy checks, and the coding runner will not be connected to production repositories or systems.
+- **Credential exposure:** API keys, access tokens, passwords, and other secrets will be kept out of context fixtures, model prompts, stored traces, and committed repository files. Credentials required to access a model will be provided through local configuration or environment variables, not committed files, and will not be intentionally exposed to the coding model unless a task strictly requires them. Because the exact model-input preview shows the compiled context directly, redaction will happen before context compilation rather than only at display time, so a secret cannot be hidden from the trace view while still reaching that preview.
+- **Governance safeguards:** Governance decisions will rely on explicit information available to the system, such as scope, provenance, version, trust metadata, declared precedence, and controlled scenario ground truth, not on judging whether arbitrary content is true. When deterministic rules cannot safely resolve a high-risk conflict, the context will be quarantined rather than automatically accepted or rejected. Each governance decision will include a visible reason code, and users will be able to inspect the exact context ultimately supplied to the model; that trace will record what was delivered to the model, not what the model privately reasoned about it.
+- **Release safeguards:** Before the final demonstration, review committed fixtures and generated artifacts for accidentally exposed credentials or private information, verify applicable licenses, and run the project's automated scenario, policy, and integration checks. Known limitations of the governance rules and evaluation scenarios will also be documented rather than presenting the system as a complete solution to coding-agent safety.
 
 ### Constraints and boundaries
 
@@ -312,13 +318,25 @@ The first evaluation estimate is 60 task-model runs: five adversarial scenario c
 
 ## 8. Roles and Timeline
 
-Detailed ownership must be confirmed by all three team members. Proposed workstreams are:
+The team assigns one primary owner to each workstream while retaining shared review responsibility for architecture, evaluation claims, safety decisions, and submission artifacts.
 
-| Workstream                  | Primary responsibilities                                                                         |
-| --------------------------- | ------------------------------------------------------------------------------------------------ |
-| Governance and evaluation   | Candidate contracts, deterministic policies, reason codes, metrics, and experimental controls    |
-| Application and integration | Workbench UI, context inspection, model adapter, task runner, and side-by-side execution         |
-| Fixtures and communication  | Synthetic repositories, scenario ground truth, automated checks, documentation, and presentation |
+| Team member       | Primary workstream                    | Responsibilities                                                                                                                      |
+| ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Will Liu          | Architecture and governance           | System architecture, candidate contracts, deterministic policies, precedence rules, reason codes, and assigned proposal requirements |
+| Bryan Yang        | Application and model integration     | Repository setup, workbench UI, context inspection, model adapter, task runner, side-by-side execution, and pitch-deck draft          |
+| Guadalupe Cantera | Evaluation, fixtures, and quality     | Scenario ideas, synthetic fixtures, ground truth, automated checks, evaluation review, QA/QC, and assigned proposal requirements      |
+
+### Next-milestone ownership
+
+| Milestone 2 task                                                        | Primary owner       | Review or support             |
+| ----------------------------------------------------------------------- | ------------------- | ----------------------------- |
+| Freeze the architecture, candidate schema, and governance reason codes  | Will Liu            | Bryan and Guadalupe           |
+| Build the first UI-to-model vertical slice and local-model adapter      | Bryan Yang          | Will                          |
+| Define the initial fixtures, expected outcomes, and evaluation rubric   | Guadalupe Cantera   | Will and Bryan                |
+| Implement policy, schema, task-outcome, and trace-consistency tests     | Guadalupe Cantera   | Bryan                         |
+| Maintain repository setup, continuous integration, and developer setup | Bryan Yang          | Will                          |
+| Review pilot evidence and approve final thresholds                      | Guadalupe Cantera   | Will and Bryan                |
+| Maintain milestone documentation and prepare the checkpoint update      | Bryan Yang          | Will and Guadalupe            |
 
 ### Full-course timeline
 
@@ -339,7 +357,6 @@ The repository is intentionally planning-focused. It currently contains the acti
 ### Current blockers
 
 - Verify the final submission package against the official Canvas instructions and grading rubric.
-- Confirm team roles and ownership.
 - Complete the preliminary technology, budget, data, licensing, ethics, and safety sections.
 - Complete the required pitch artifact and final PDF.
 
@@ -347,7 +364,7 @@ The repository is intentionally planning-focused. It currently contains the acti
 
 1. Verify the Milestone 1 checklist against the official course rubric.
 2. Review and approve this proposal as the Milestone 1 source of truth.
-3. Confirm team roles and preliminary technology choices.
+3. Confirm the preliminary technology choices with the assigned workstream owners.
 4. Complete the budget, data, licensing, ethics, safety, and timeline sections.
 5. Create the required pitch artifact.
 6. Assemble and verify the final PDF for submission.
@@ -373,15 +390,15 @@ The following items are the proposed submission checklist. The team must verify 
 
 - [X] Consolidate the project explanation and motivation into the two-paragraph format named in the grading rubric.
 - [X] Add a weekly check-in with progress made, top blockers or risks, and planned next steps. -> @weekly_journal.md
-- [X] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. -> General milestone by milestone via task -> Will: arch + checklist items Guadalupe: ideas + qa/qc + checklist items Bryan: repo setup + checklist items
-- [ ] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. <- bryan
-- [ ] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. <- Guadalupe
-- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. <- Will
-- [ ] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards.  <- Guadalupe
-- [ ] Add an explicit early timeline checkpoint for data or fixture access and licensing review. <- MIT (research Bryan)
+- [x] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. Completed in Roles and Timeline.
+- [x] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. Owner: Bryan. Completed in Preliminary implementation choices.
+- [x] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. Owner: Guadalupe. Completed in Rough compute and tooling budget.
+- [ ] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. Owner: Will.
+- [x] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards. Owner: Guadalupe. Completed in Ethics and safety plan.
+- [x] Add an explicit early timeline checkpoint to confirm fixture access, ownership, permitted use, private-data exclusions, and license-inventory responsibilities before evaluation fixtures are frozen. Owner: Bryan researches; group reviews. Completed in the Full-course timeline.
 
 ### Submission artifacts
 
-- [ ] Draft a pitch deck with six slides or fewer, or a three-to-five-minute concept video. <- Bryan draft and put it in the google doc
-- [ ] Export the pitch deck or concept video and visually verify the final artifact. <- group
-- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions. <- group
+- [x] Draft a pitch deck with six slides or fewer. Owner: Bryan. Completed in `docs/milestone_1/pitch_deck.md`.
+- [ ] Export the pitch deck, visually verify the final artifact, and import it into Google Slides. Owner: group.
+- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions. Owner: group.

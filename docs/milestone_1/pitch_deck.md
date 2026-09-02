@@ -86,10 +86,10 @@ The coding model receives either the complete ungoverned candidate set or the go
 
 ### Provisional operating limits
 
-- **60 task-model runs:** six scenario classes, two conditions, five repeats
-- **$50:** total hosted-model API cap
-- **$20:** maximum short-lived deployment cost; $0 preferred
-- **16 GB memory and 20 GB storage:** minimum local-model planning assumption
+- **36 task-model runs:** six scenario classes, two conditions, three repeats
+- **$20:** total hosted-model API cap
+- **$10:** maximum short-lived deployment cost; $0 preferred
+- **16 GB memory and 25 GB storage:** minimum local-model planning assumption
 
 ### Data and safeguards
 
@@ -113,7 +113,8 @@ The coding model receives either the complete ungoverned candidate set or the go
 
 ### Before submission
 
-- Confirm team ownership and weekly check-in
+- Confirm the first model and runtime for the provider-neutral adapter
+- Add and verify the required basic CI smoke test
 - Verify requirements against the official Canvas rubric
 - Export and visually verify the pitch deck
 - Assemble the final submission PDF
@@ -123,7 +124,7 @@ The coding model receives either the complete ungoverned candidate set or the go
 - Exact model selection and integration
 - Governance contracts and executable scenarios
 - Pilot runs and final metric thresholds
-- CI and optional comparison-model work
+- Optional comparison-model work
 
 ### Feedback requested
 
