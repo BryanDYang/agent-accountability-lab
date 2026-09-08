@@ -1,6 +1,6 @@
-# Milestone 1 Project Proposal and Scope
+# Milestone 1 Project Proposal
 
-## Visual Context Governance for Reliable Coding Agents
+## Meeting Follow-Through Assistant
 
 **Course:** CIS-5980
 
@@ -8,397 +8,256 @@
 
 **Team:** Bryan Yang, Will Liu, and Guadalupe Cantera
 
-**Status:** Working submission draft
+**Status:** Working proposal for the new project direction
 
-**Repository:** [agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)
+**Updated:** September 8, 2026
+
+Course, track, and team names are carried forward from the previous proposal. Roles, schedule, budget, and evaluation targets below are proposed for team review. Official Canvas requirements and submission dates have not yet been verified.
 
 ## 1. Project Explanation and Motivation
 
-Coding agents assemble model context from user tasks, target files, repository instructions, company documentation, retrieved files, tool output, and memories from earlier work. These sources can be stale, duplicated, untrusted, mutually inconsistent, or applicable only to a different repository or directory. Retrieval systems usually optimize for relevance, but relevant information is not necessarily current, applicable, or safe. Developers also have limited visibility into this process: they may see the user request and final answer without seeing which context candidates were considered, why a source was removed, how conflicts were handled, or the exact context ultimately sent to the model. That makes context-related failures difficult to explain and governance benefits difficult to demonstrate.
-
-We propose a visual context-governance workbench for coding agents. A user can construct a coding task, add candidate context through drag and drop or controlled fixtures, observe deterministic governance decisions, inspect the exact compiled model input, and compare the same task with and without governance. The application will report context and output tokens, latency, policy violations, task outcomes, and false rejections so token reduction is not mistaken for reliability improvement. This plan combines a working application, deterministic governance policies, controlled coding scenarios, and paired evaluation runs to demonstrate whether the system improves reliability without unacceptable costs.
-
-As an AI Engineering project, the proposal uses the following engineering validation question to connect the system design to measurable success criteria; it is not presented as a separate Research-Driven track requirement:
-
-> Can visible, application-level context governance prevent invalid context from reaching a coding model and improve controlled coding-task outcomes without unacceptable loss of valid context, latency, or token efficiency?
-
-## 2. Project Charter
-
-### Problem statement
-
-Coding agents lack a dependable and observable mechanism for deciding which retrieved instructions, documents, and memories should enter model context. Prompt instructions can ask a model to prefer current or trusted information, but they do not enforce admission before inference or provide a complete record of what was considered and supplied.
-
-### Target users
-
-The primary users are engineers and AI platform owners responsible for coding-agent reliability. They need to understand and control the context supplied to a model before it edits a repository or recommends an action.
-
-### Value proposition
-
-Show developers exactly what context was considered, what governance did to it, what reached the coding model, and how governance changed task quality, token use, and latency.
-
-### End deliverable
-
-The final deliverable will be a locally deployable visual workbench with:
-
-- Task input, target-file selection, model selection, and a configurable token budget
-- Drag-and-drop candidate context and reproducible scenario fixtures
-- Candidate metadata for provenance, type, scope, authority, trust, validity, and version
-- Deterministic admit, reject, quarantine, deduplication, and priority decisions with reason codes
-- An ordered preview of the exact governed context and complete model input
-- Side-by-side execution of governed and ungoverned versions of the same coding task
-- Model output, proposed code changes, automated task checks, and policy-violation results
-- Separate input-token, output-token, governance-token, latency, and total-usage reporting
-- A provider-neutral model adapter with at least one repeatable local or open-source model
-- A reproducible evaluation harness using controlled coding tasks with known ground truth
-
-### User workflow
-
-1. The user enters a coding task and selects the target files or path scope.
-2. The user drags in documents, rules, memories, or a prepared scenario fixture.
-3. The application extracts content and displays candidate metadata and token counts.
-4. The governance pipeline evaluates scope, validity, supersession, trust, conflicts, and duplication.
-5. Every candidate remains visible with an admit, reject, quarantine, or deduplicate decision and reason code.
-6. The application compiles the approved context within the configured token budget.
-7. The user inspects the exact prompt and context that will be sent to the model.
-8. The application runs matched governed and ungoverned conditions.
-9. The user compares model output, repository changes, tests, violations, tokens, and latency.
-
-## 3. System Architecture
-
-The governance layer is positioned between raw context collection and model inference. The coding agent receives an approved context bundle and does not read the unfiltered candidate pool directly.
-
-```text
-User / IDE / Task
-        |
-        | Task intent, target files, model, token budget
-        v
-+------------------------------------------------------------------+
-| Governance Orchestration Layer                                   |
-|                                                                  |
-|  1. Ingestion and Extraction                                     |
-|     - Document extractor                                         |
-|     - Repository rules scanner                                   |
-|     - Memory or retrieval adapter                                |
-|                         |                                        |
-|                         v                                        |
-|  2. Deterministic Pre-filter and Hierarchy Policy                |
-|     - Path and repository scope                                  |
-|     - Validity and supersession                                  |
-|     - Authority and trust                                        |
-|     - Deduplication and token-budget checks                       |
-|                         |                                        |
-|                         v                                        |
-|  3. Conflict Resolver and Context Compiler                       |
-|     - Quarantine unresolved conflicts                            |
-|     - Order admitted candidates                                  |
-|     - Compile the approved context bundle                        |
-+------------------------------------------------------------------+
-        |
-        | Approved governed context plus decision trace
-        v
-+------------------------------------------------------------------+
-| Coding Model / Agent                                             |
-| - Receives only the compiled input for its assigned condition    |
-| - Produces output, proposed edits, and tool activity              |
-+------------------------------------------------------------------+
-        |
-        v
-Outcome checks, token accounting, latency, and comparison
-```
-
-### Component responsibilities
-
-| Component                | Responsibility                                                          | Visible evidence                                                      |
-| ------------------------ | ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Ingestion and extraction | Normalize manually added or retrieved sources into candidate records    | Source, content, version, scope, trust, and raw token count           |
-| Deterministic pre-filter | Apply mechanically verifiable policies                                  | Decision, reason code, policy version, and tokens admitted or removed |
-| Conflict resolver        | Apply declared precedence and quarantine unresolved high-risk conflicts | Conflicting claims, applied precedence, or quarantine reason          |
-| Context compiler         | Order admitted candidates and enforce the context budget                | Exact approved bundle and compiled token count                        |
-| Model adapter            | Invoke the selected model through a stable interface                    | Model, parameters, exact request, response, and provider usage        |
-| Evaluation runner        | Score matched task executions                                           | Tests, policy checks, latency, token use, and paired differences      |
-
-The first milestone will prioritize deterministic governance. Model-assisted conflict classification is optional and, if used, will be a separately measured branch with its own model identity, input, output, latency, and token cost. The system will not claim to determine the objective truth of arbitrary natural-language statements.
-
-## 4. Application and Interface Design
-
-The interface mirrors the architecture so users can inspect the full path from candidate context to task outcome.
-
-```text
-+--------------------------------------------------------------------------+
-| Task | Target files | Model | Token budget | Scenario                    |
-+----------------------+----------------------+----------------------------+
-| Candidate Context    | Governance Trace     | Exact Model Input          |
-|                      |                      |                            |
-| Drag files here      | ADMIT                | System instructions        |
-| Repository rules     | REJECT               | User task                  |
-| Documentation        | QUARANTINE           | Approved context           |
-| Retrieved memories   | DEDUPLICATE          | Token breakdown            |
-| Candidate metadata   | Reason codes         | Ordered payload            |
-+----------------------+----------------------+----------------------------+
-| Run without governance             | Run with governance              |
-+------------------------------------+-------------------------------------+
-| Ungoverned output                  | Governed output                   |
-| Proposed edits                     | Proposed edits                    |
-| Tests and violations               | Tests and violations              |
-| Input and output tokens            | Input and output tokens           |
-| Latency                            | Governance and total latency      |
-+------------------------------------+-------------------------------------+
-```
-
-The UI exposes application inputs and outputs, not the model's private reasoning. Provider-reported token usage will be labeled as exact for that request. Tokenizer calculations used before a request will be labeled as estimates.
-
-## 5. Objectives, Experimental Method, and Metrics
-
-### Technical objectives
-
-1. Prevent invalid context from entering model input when invalidity is established by explicit metadata or controlled ground truth.
-2. Preserve a trace from every candidate through its governance decision, compiled input, model output, and scored outcome.
-3. Make governance behavior understandable through visible reason-coded decisions and exact input inspection.
-4. Measure context reduction without hiding false rejection or task-performance costs.
-5. Demonstrate paired governed and ungoverned executions through a provider-neutral model interface.
-
-### Compared conditions
-
-Each controlled task will use the same repository revision, request, candidate set, tools, model, parameters, and trial seed when supported.
-
-1. **No governance:** Every retrieved candidate is placed into model context.
-2. **Governance enabled:** Deterministic policies filter, deduplicate, scope, order, and reason-code candidates before inference.
-3. **Prompt-only governance:** All candidates enter context with instructions to prefer current, applicable, and trusted information. This is an experimental baseline and does not need to dominate the live demonstration.
-
-The two primary modes in the workbench will be no governance and governance enabled.
-
-### Initial scenarios
-
-- A superseded instruction conflicts with current repository configuration.
-- A directory-scoped rule is retrieved for the wrong target path.
-- Untrusted repository or issue content attempts to become an authoritative instruction.
-- A stale handoff memory names an obsolete architecture or test command.
-- Duplicate guidance consumes tokens without adding information.
-- A clean control contains only valid, applicable context.
-
-Each scenario will define candidate labels, expected governance decisions, allowed context, expected coding or tool outcome, and machine-checkable tests before model trials begin.
-
-### Success metrics
-
-Detailed formulas, statistical methods, and threshold calibration are deferred to the [Milestone 2 Evaluation Plan](../milestone_2/evaluation_plan.md). For Milestone 1, the metric identities and purposes below define the proposed evaluation direction.
-
-| Metric                         | What it establishes                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| Invalid-context admission rate | Whether governance prevents known-invalid candidates from reaching the model             |
-| False-rejection rate           | Whether governance incorrectly removes valid candidates                                  |
-| Task-success rate              | Whether the coding task passes its required tests and policy checks                      |
-| Repository-rule violation rate | Whether model output violates the active scenario rule                                   |
-| Input context tokens           | How much context each condition supplies to the task model                               |
-| Output tokens                  | Whether output length or behavior changes materially                                     |
-| Governance-model tokens        | Any tokens consumed by optional model-assisted governance                                |
-| Governance and total latency   | The preprocessing cost and full user-visible runtime                                     |
-| Decision clarity               | Whether an evaluator can correctly explain a governance decision from the UI             |
-| Trace completeness             | Whether all required candidate, decision, input, model, and outcome evidence is recorded |
-
-Token reduction alone will not count as success. It must be interpreted alongside task success, policy violations, and false rejection. Numeric targets remain provisional until a pilot establishes reasonable effect sizes and variance.
-
-### Model strategy
-
-- Use one inexpensive local or open-source model for repeatable demonstrations and most experimental runs.
-- Use one stronger coding model, potentially Codex, for a limited external-validity comparison if access and course constraints permit.
-- Compare governance conditions within the same model. Results across different models will be reported separately and will not be attributed to governance.
-- Record the exact model identifier, configuration, tokenizer or usage source, and software version for every evaluated run.
-
-## 6. Feasibility, Constraints, Ethics, and Safety
-
-### Preliminary implementation choices
-
-- **Front end:** React and TypeScript with Vite for a local visual workbench; semantic HTML and accessible interactions remain requirements regardless of framework.
-- **Back end:** Python 3.12 with FastAPI for task setup, deterministic governance, model invocation, and evaluation endpoints.
-- **Storage:** SQLite for local tasks, candidates, decisions, exact model requests, and outcomes; content hashes link immutable evidence records without requiring production infrastructure.
-- **Model integration:** Use Qwen2.5-Coder 7B Instruct as the first repeatable local coding model, served through Ollama's OpenAI-compatible endpoint. The application will call it through a provider-neutral adapter that records the model tag, runtime version, request parameters, exact messages, response, latency, and token counts for every run. Phase 2 will first prove one complete local run through this adapter before adding an optional hosted comparison model.
-- **Evaluation:** In Phase 2, define a versioned JSON fixture schema containing the task, disposable repository revision, target paths, candidate context and metadata, expected governance decisions, active repository rules, and machine-checkable task outcomes. Pytest will validate the schema and deterministic policies, materialize each disposable repository, run matched governed and ungoverned conditions with the same model settings, execute task tests and static policy assertions, and write one trace and metric record per run. Playwright will exercise the user-visible path from loading a fixture through inspecting decisions and exact model input to launching both conditions and comparing their results. The first Phase 2 checkpoint is one end-to-end scenario whose UI results, saved trace, and Pytest outcome agree before the team expands the fixture suite.
-- **Design framework:** The current dependency-free HTML  in mockup and Draw.io architecture remain the low-fidelity design sources; implementation styling will use CSS custom properties and a small project-owned component vocabulary before considering a larger UI library.
-- **Distribution:** Reproducible local setup first, with container packaging as a release goal.
-
-Final framework commitments will be made after a narrow end-to-end prototype validates the interaction and model path.
-
-All choices are provisional. Milestone 1 establishes a credible implementation direction rather than locking the team into frameworks before the first vertical prototype.
-
-### Rough compute and tooling budget
-
-The project is designed to rely primarily on existing team hardware and free, open-source development tools. The team assumes each member has access to a modern development laptop with at least 16 GB of memory, enough to run the quantized local coding model that receives governed or ungoverned context and produces the code edit under evaluation. The laptop also needs approximately 25 GB of free storage for the downloaded model, Python and Node dependencies, Playwright's browser binary, team-authored fixtures, and recorded governance decisions and model outputs. No new hardware purchases are planned.
-
-Qwen2.5-Coder 7B Instruct served through Ollama is the initial baseline selected in the model-integration plan above. The hardware envelope also leaves room to evaluate a larger quantized model if the team chooses to do so: Ollama lists the 4-bit Qwen2.5-Coder 14B artifact at roughly 9 GB, while OpenAI describes gpt-oss-20b as capable of running within 16 GB of memory. These are feasibility examples, not additional model commitments. Phase 2 will confirm actual memory, storage, latency, and stability on available team hardware. If the baseline cannot run reliably, the team will use limited hosted inference through the same provider-neutral adapter.
-
-For the initial pilot, the team estimates approximately 36 primary task-model runs. This comes from six scenario classes, including five adversarial scenarios and one clean control, two primary conditions, and three repeated trials for each scenario-condition pair. Three trials are an initial planning estimate rather than a statistically derived requirement because the system does not yet have an effect-size or variance estimate. Pilot results will determine whether the final evaluation requires additional repetitions. Governance runs, failed setup attempts, and optional comparison-model runs will be reported separately rather than hidden inside the task-model total.
-
-Most evaluation runs are expected to use the local model, keeping inference costs near zero. Hosted-model usage will be limited primarily to development needs and an optional stronger-model comparison. Based on provider pricing reviewed in September 2026, a 36-run pilot is expected to cost only a few dollars under ordinary prompt and response sizes, but actual cost will depend on measured token usage. The team will use a $20 total API spending cap unless additional spending is explicitly approved. The application is intended to run locally, so deployment cost is expected to remain $0 on a free hosting tier, with up to $10 reserved for a short-lived demonstration environment if needed.
-
-| Budget item                                          | Provisional limit                                                                                   |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Open-source development tools and repository hosting | $0                                                                                                  |
-| Local model execution                                | Existing team hardware; no new hardware purchase assumed                                            |
-| Hosted model API usage                               | $20 total project cap unless the team approves a documented exception                               |
-| Optional deployment                                  | $0 preferred using a free hosting tier; up to $10 total for a short-lived demonstration environment |
-| Storage                                              | Local SQLite and repository fixtures; no paid database assumed                                      |
-
-Pricing and hardware figures reflect research conducted in September 2026 and will be reverified before final Milestone 2 threshold calibration because API and hosting prices can change. Sources: [Claude Platform Pricing](https://platform.claude.com/docs/en/about-claude/pricing), [OpenAI API Pricing](https://developers.openai.com/api/docs/pricing), [Qwen2.5-Coder 14B on Ollama](https://ollama.com/library/qwen2.5-coder:14b), and [Introducing gpt-oss](https://openai.com/index/introducing-gpt-oss/).
-
-### Data and licensing plan
-
-1. **Fixture sources and origin:** All project fixtures shall consist primarily of team-authored synthetic repositories, tasks, operational rules, synthetic documents, agent memories, and expected evaluation outcomes. Public or third-party examples may be incorporated only when their explicit licenses permit redistribution and modification and all upstream copyright, attribution, and license-notice obligations have been satisfied before adoption.
-2. **Access, storage, and ownership:** All validated and approved fixtures must be stored directly within the project repository so every team member can independently review, inspect, and reproduce evaluation results. Each fixture commit must include formal provenance metadata recording the author and creation date or the corresponding upstream source.
-3. **Permitted scope of use and disclaimers:** Fixtures and derived assets covered under this plan are authorized exclusively for course development, systematic evaluation, academic demonstrations, and publication in accordance with the repository's declared open or proprietary license. Synthetic results, test cases, and simulated user behaviors must not be marketed, represented, or construed as reflective of actual production organizations, commercial systems, or real individuals.
-4. **Exclusion of private and proprietary data:** Employer codebases, proprietary enterprise documentation, customer data, internal communications, authentication credentials, student records, and personally identifiable information are strictly forbidden. Contributors must sanitize all artifacts and replace realistic names, domains, and identifiers with verified synthetic placeholders before committing files to the repository.
-5. **Third-party tracking and inventory management:** Before freezing any benchmark or fixture release, the project team must compile and maintain a centralized third-party asset inventory. The registry must account for all external software dependencies, public datasets, model weights, third-party APIs, icons, fonts, and adapted reference materials, identifying the exact source URL, active license terms, and required attribution statements.
-6. **Model terms and evaluation governance:** Every foundation or fine-tuned model evaluated within this initiative must be logged with complete compliance metadata. The record must detail the model name, exact version tag, provider or hosting vendor, governing license or terms of service, access date, and any known restrictions on commercial reuse, output redistribution, or derivative works.
-
-### Ethics and safety plan
-
-- **Privacy:** Development and evaluation will use synthetic, purpose-built, or licensed public repositories, coding tasks, and context fixtures, per the data and licensing plan above. Fixtures will not include employer or customer code, private communications, student records, personal information, or other proprietary data. Because the workbench records candidate context and model-input traces, only information necessary for the controlled experiment will be stored, and the evidence store will stay local to each team member's machine rather than shared or hosted.
-- **Representativeness and bias:** The evaluation scenarios are designed to test specific context-governance failures: a superseded instruction that conflicts with current configuration, a rule retrieved for the wrong path scope, untrusted content attempting to become an authoritative instruction, a stale handoff memory naming an obsolete command, and duplicate guidance. These scenarios will not represent every repository, programming language, organization, or type of coding-agent failure. Results will therefore be reported by scenario and will not be generalized beyond the conditions tested.
-- **Misuse:** The workbench is intended as a defensive tool for evaluating and debugging coding-agent context. It will not be presented as a general security system or a mechanism for determining whether arbitrary information is objectively true. Evaluation scenarios will not involve credential theft, persistence, exploitation, or attacks against third-party systems.
-- **Harmful code output:** Model-generated code and commands will be treated as untrusted until evaluated. Generated changes will run only inside disposable evaluation repositories with a restricted toolset: file edits and test execution inside the evaluation repository, no network access, no arbitrary package installation, and no shell command outside an explicit allow-list. Generated changes will be checked using the scenario's automated tests and policy checks, and the coding runner will not be connected to production repositories or systems.
-- **Credential exposure:** API keys, access tokens, passwords, and other secrets will be kept out of context fixtures, model prompts, stored traces, and committed repository files. Credentials required to access a model will be provided through local configuration or environment variables, not committed files, and will not be intentionally exposed to the coding model unless a task strictly requires them. Because the exact model-input preview shows the compiled context directly, redaction will happen before context compilation rather than only at display time, so a secret cannot be hidden from the trace view while still reaching that preview.
-- **Governance safeguards:** Governance decisions will rely on explicit information available to the system, such as scope, provenance, version, trust metadata, declared precedence, and controlled scenario ground truth, not on judging whether arbitrary content is true. When deterministic rules cannot safely resolve a high-risk conflict, the context will be quarantined rather than automatically accepted or rejected. Each governance decision will include a visible reason code, and users will be able to inspect the exact context ultimately supplied to the model; that trace will record what was delivered to the model, not what the model privately reasoned about it.
-- **Release safeguards:** Before the final demonstration, review committed fixtures and generated artifacts for accidentally exposed credentials or private information, verify applicable licenses, and run the project's automated scenario, policy, and integration checks. Known limitations of the governance rules and evaluation scenarios will also be documented rather than presenting the system as a complete solution to coding-agent safety.
-
-### Constraints and boundaries
-
-- Use synthetic or purpose-built repositories and context fixtures.
-- Do not include private code, customer data, credentials, or personal information.
-- Record model, dataset, dependency, and public fixture licenses before publication.
-- Do not claim that rejected context caused a model's private reasoning.
-- Do not claim that the system establishes objective truth.
-- Quarantine unresolved high-risk conflicts rather than silently choosing a source.
-- Keep coding tools restricted to disposable evaluation repositories.
-
-### Principal risks and mitigations
-
-| Risk                                                                   | Mitigation                                                                                                                  |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Natural-language conflict resolution becomes open-ended truth judgment | Limit required decisions to explicit metadata, declared supersession, controlled ground truth, and deterministic predicates |
-| Token savings remove necessary information                             | Measure false rejection, clean-control performance, and task success alongside tokens                                       |
-| Model stochasticity obscures governance effects                        | Use paired inputs, fixed settings, repeated trials, and per-scenario reporting                                              |
-| Model-assisted governance hides its own cost                           | Report its model, tokens, latency, and output separately                                                                    |
-| The UI becomes a general prompt builder                                | Keep every interaction tied to governance decisions and controlled outcome comparison                                       |
-| Integration work overwhelms the project                                | Support one controlled coding runner and a narrow model adapter before adding integrations                                  |
-
-## 7. MVP Scope
-
-### Included
-
-- Visual task setup with target-file scope and token budget
-- Drag-and-drop candidate context and prepared fixtures
-- Structured candidate metadata and token estimates
-- Deterministic governance with stable reason codes
-- Visible candidate decisions and conflict quarantine
-- Exact approved-context and model-input preview
-- Governed and ungoverned execution using the same model configuration
-- Side-by-side outputs, proposed edits, tests, violations, tokens, and latency
-- One local or open-source model integration
-- At least five adversarial scenario classes plus clean controls
-- Automated scenario, policy, schema, integration, and metric tests
-- Reproducible local setup, documentation, final report, and live demonstration
+Recurring research meetings produce commitments, decisions, and deadlines that are difficult to maintain across weeks. An advisor may promise to send papers, a student may agree to rerun an experiment, and both may leave without a dependable record of who owes what. Transcripts and summaries help people remember a meeting, but follow-through requires connecting later conversations to earlier commitments, recognizing changes, and preserving the evidence behind each update. The project sponsor already has a recording-to-transcript-and-summary tool; the proposed project builds the assistant layer that turns those individual meeting records into useful ongoing project memory.
+
+We propose a meeting follow-through assistant for advisors, students, and small research teams. It will ingest meeting recordings, produce timestamped transcripts and concise summaries, extract named commitments and decisions, and maintain a living action-item list organized by person and project. When a later meeting reports progress, the assistant will match the statement to an existing item and update its status with a source citation, asking for review when the match is ambiguous. Users will also be able to ask questions about prior meetings and inspect the supporting transcript passages. The central engineering contribution is an evaluated workflow for maintaining commitments across meetings, with traceable changes, correction controls, and explicit uncertainty.
+
+**Engineering question:** Can an assistant reliably maintain commitments across a sequence of meetings while reducing manual reconciliation and avoiding unsupported task updates?
+
+## 2. Users and Example Workflow
+
+The primary users are a PhD advisor and their students. A secondary development setting is our own consenting project team or study group.
+
+1. Before recording, participants agree to recording and the intended processing and retention policy.
+2. After Tuesday's meeting, a user uploads the recording and selects the project, attendees, meeting date, and timezone.
+3. The assistant produces a transcript and a short summary with decisions and commitments. Users can correct speaker names and extraction errors.
+4. The task board shows that the student owns the baseline rerun and the advisor owns sending two papers. Missing due dates remain unspecified.
+5. A paper deadline five weeks away can seed a suggested backward plan. Suggested intermediate dates are labeled as proposals until accepted.
+6. At the next meeting, “I finished the baseline rerun” updates the matching task to done if the owner, project, and evidence support the match. The update links to this new statement and retains the original commitment.
+7. The advisor's unsent papers remain open and appear in an in-app pre-meeting brief. Silence never marks a task done or dropped.
+8. A question such as “What did we decide about the baseline last month?” returns an answer with meeting and timestamp citations, or states that the available evidence is insufficient.
+
+The MVP provides in-app summaries and reminders. Automatic email delivery and external calendar changes require a later integration and are outside the required demonstration.
+
+## 3. Terms and Observable Outputs
+
+| Term | Definition and output |
+|---|---|
+| Transcription | Converts speech into timestamped text; it does not establish speaker identity. |
+| Transcript cleanup | Edits recognition errors, punctuation, and filler without changing meaning; it produces a separate cleaned version linked to the original segments. |
+| Diarization | Separates stretches of audio by voice; it produces speaker labels, not names. |
+| Speaker identification | Maps speaker labels to attendee names with user confirmation; an attendee list alone does not establish who spoke. |
+| Action item | A named person's commitment to a specific task, with an optional due date, status, and source timestamp; an unowned suggestion remains a candidate for clarification. |
+| Decision | A statement settling a question, stored with its source; a later reversal is a linked new decision rather than an overwrite. |
+| Reconciliation | Matches a later statement to an existing commitment and proposes or records an evidenced change; similar wording alone is insufficient. |
+| Summary | A concise account of discussion, decisions, and commitments evaluated for faithfulness, coverage, and usefulness. |
+| Suggested plan | Proposed steps working backward from a confirmed deadline; its invented intermediate dates are not meeting commitments. |
+| Consent | Recorded agreement by every participant to the stated recording and processing policy before audio processing; an upload alone is not evidence of everyone's agreement. |
+
+## 4. Scope and Deliverable
+
+### Required MVP
+
+- Upload recorded audio and import existing timestamped transcripts.
+- Transcribe and diarize audio, then let users confirm or correct speaker mappings.
+- Generate structured decisions, commitments, and a concise summary with source references.
+- Maintain open, done, and dropped tasks across meeting sequences, including owner and deadline changes.
+- Present ambiguous matches for review and provide correction and undo with change history.
+- Provide meeting, person, and project views, plus an in-app brief of outstanding and overdue items.
+- Answer historical questions using retrieved evidence with clickable transcript timestamps.
+- Generate a reviewable backward plan from a user-confirmed deadline.
+- Demonstrate consent gating, selective exclusion, deletion, and project-scoped retrieval.
+- Deliver a local application, reproducible evaluation fixtures, measured results, and setup documentation.
 
 ### Stretch goals
 
-- Prompt-only governance as an interactive third mode
-- A stronger hosted coding-model comparison
-- Automatic context retrieval based on the task prompt
-- Post-incident source correction and deterministic replay
-- Blast-radius analysis across stored tasks
-- Model-assisted classification for quarantined conflicts
+iPhone capture, Zoom ingestion, slide-aware summaries, calendar/task-service integration, and automatic scheduled notifications. Voice-profile enrollment is also deferred; manual speaker confirmation is sufficient for the MVP.
 
-### Explicitly out of scope
+### Boundaries
 
-- Automatic truth verification for arbitrary natural-language content
-- Custom model training or fine-tuning
-- A general enterprise agent control plane
-- Support for every model provider, coding agent, repository host, or language
-- Production multi-tenancy, billing, identity, or marketplace distribution
-- Human approval for every candidate or coding task
-- Claims about model consciousness, hidden reasoning, or causal attribution from prompt traces alone
+The project will not train a speech model, infer productivity scores, monitor people without consent, deploy a production multi-tenant service, or claim to establish real-world task completion beyond what participants report. Initial evaluation covers English-language small-group meetings; broader language and setting claims require additional evidence.
 
-## 8. Roles and Timeline
+## 5. Architecture and AI Engineering
 
-The team assigns one primary owner to each workstream while retaining shared review responsibility for architecture, evaluation claims, safety decisions, and submission artifacts.
+```text
+Recording + attendees + date/timezone + consent record
+                         |
+             Consent gate and private storage
+                         |
+       Transcription -> diarization -> speaker confirmation
+                         |
+       Original segments + aligned cleaned transcript
+                         |
+        Structured summary, decision, and task extraction
+                         |
+        Retrieve existing tasks within the same project
+                         |
+         Match later mentions and propose state changes
+                         |
+       Validate evidence -> apply or request human review
+                         |
+       Task history + person/project views + meeting brief
 
-| Team member       | Primary workstream                | Responsibilities                                                                                                                     |
-| ----------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Will Liu          | Architecture and governance       | System architecture, candidate contracts, deterministic policies, precedence rules, reason codes, and assigned proposal requirements |
-| Bryan Yang        | Application and model integration | Repository setup, workbench UI, context inspection, model adapter, task runner, side-by-side execution, and pitch-deck draft         |
-| Guadalupe Cantera | Evaluation, fixtures, and quality | Scenario ideas, synthetic fixtures, ground truth, automated checks, evaluation review, QA/QC, and assigned proposal requirements     |
+Historical question -> project-scoped retrieval -> cited answer
+Confirmed deadline -> suggested plan -> user acceptance
+```
 
-### Next-milestone ownership
+The AI work comprises structured extraction, semantic task matching, evidence-grounded summarization, and retrieval-augmented answers. Application code validates schemas, source references, project boundaries, and permitted state transitions. Transcript content is untrusted data and cannot authorize tool execution or change system instructions.
 
-| Milestone 2 task                                                       | Primary owner     | Review or support   |
-| ---------------------------------------------------------------------- | ----------------- | ------------------- |
-| Freeze the architecture, candidate schema, and governance reason codes | Will Liu          | Bryan and Guadalupe |
-| Build the first UI-to-model vertical slice and local-model adapter     | Bryan Yang        | Will                |
-| Define the initial fixtures, expected outcomes, and evaluation rubric  | Guadalupe Cantera | Will and Bryan      |
-| Implement policy, schema, task-outcome, and trace-consistency tests    | Guadalupe Cantera | Bryan               |
-| Maintain repository setup, continuous integration, and developer setup | Bryan Yang        | Will                |
-| Review pilot evidence and approve final thresholds                     | Guadalupe Cantera | Will and Bryan      |
-| Maintain milestone documentation and prepare the checkpoint update     | Bryan Yang        | Will and Guadalupe  |
+Each task has a stable ID, project ID, owner ID, description, nullable due date, status, and original source segment. Each update records the task ID, previous and new values, evidence segment, meeting date, processing time, and whether a user or model proposed and accepted it. Unresolved candidates are kept separately from accepted tasks. An update cannot reference a nonexistent segment or silently move a task into another project.
 
-### Full-course timeline
+Processing is idempotent: re-uploading or retrying a meeting must not duplicate accepted tasks. Meetings are reconciled in event order; importing older meetings must not silently overwrite newer task state. Speaker and transcript corrections invalidate dependent outputs for review or recomputation. Search indexes and cached outputs follow source deletions.
 
-| Period        | Checkpoint and output                                                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| End of Week 1 | Confirm fixture access, ownership, permitted use, private-data exclusions, and license-inventory responsibilities before approving any evaluation source |
-| Weeks 1-2     | Finalize the workbench proposal, architecture, roles, evaluation claims, and pitch artifact                                                              |
-| Weeks 3-5     | Prototype task input, candidate loading, exact model-input preview, and one ungoverned coding run                                                        |
-| Weeks 6-8     | Implement deterministic governance, reason codes, token accounting, and the governed run                                                                 |
-| Weeks 9-10    | Complete side-by-side comparison, automated checks, clean controls, and scenario fixtures                                                                |
-| Weeks 11-12   | Run paired evaluations and analyze reliability, false rejection, latency, tokens, and failures                                                           |
-| Weeks 13-14   | Freeze the release, reproduce from a clean setup, complete the report, and prepare the demonstration                                                     |
+### Preliminary implementation choices
 
-## 9. Repository Status and Next Steps
+| Layer | Proposed choice and purpose |
+|---|---|
+| Interface | React, TypeScript, and a consistent accessible component library for transcript, task, and review views |
+| Service | Python with FastAPI and schema validation for ingestion, extraction, and task operations |
+| Speech | Inspect the sponsor's existing pipeline first; use Whisper and pyannote.audio if reuse is unavailable or unsuitable |
+| Persistence | SQLite for the local MVP, local private audio storage, and timestamped transcript segments |
+| Retrieval | Project-filtered text search plus embeddings when pilot evidence justifies semantic retrieval; keep source IDs attached throughout |
+| Model integration | One configured LLM behind a small adapter, with structured outputs and bounded retries; exact model selected after a quality/cost pilot |
+| Verification | Pytest for extraction/state behavior and Playwright for upload, review, correction, and citation workflows |
+| Observability | Record model/prompt versions, usage, processing failures, stage latency, and cost per hour of audio |
 
-The repository is intentionally planning-focused. It currently contains the active proposal, metric appendix, historical planning archive, course reference materials, and project governance documents. Earlier implementation scaffolding was removed because it represented a superseded project direction.
+No sponsor code is assumed available or licensed until inspected. Transcript imports allow development of the core follow-through workflow while audio integration proceeds. Prompt caching is an optional measured optimization after correctness is established.
 
-### Current blockers
+## 6. Evaluation Plan
 
-- Verify the final submission package against the official Canvas instructions and grading rubric.
-- Complete the preliminary technology, budget, data, licensing, ethics, and safety sections.
-- Complete the required pitch artifact and final PDF.
+### Data and experimental design
 
-### Next steps
+Target 18 short meetings arranged into six independent three-meeting project sequences, using consenting team meetings and purpose-recorded scenarios. Split whole sequences into three development, one validation, and two held-out test sequences. Keep scenario variants and overlapping source material together to prevent leakage. These are pilot-scale targets, not a claim of statistical representativeness. Report counts and uncertainty, and expand the held-out set if feasible.
 
-1. Verify the Milestone 1 checklist against the official course rubric.
-2. Review and approve this proposal as the Milestone 1 source of truth.
-3. Confirm the preliminary technology choices with the assigned workstream owners.
-4. Complete the budget, data, licensing, ethics, safety, and timeline sections.
-5. Create the required pitch artifact.
-6. Assemble and verify the final PDF for submission.
+Two team members independently annotate the held-out commitments, owners, deadlines, decisions, links between meetings, and state changes, then resolve disagreements before scoring. Include completion, partial completion, reassignment, changed deadlines, dropped tasks, duplicate mentions, similar tasks in different projects, uncertain speakers, negation, and tasks never mentioned again. Include answerable and unanswerable historical questions. Freeze prompts and thresholds before held-out evaluation.
 
-Project-readiness decisions, repository setup, implementation, pilot runs, final metric thresholds, and optional comparison-model work are tracked in the [Milestone 2 TODO](../milestone_2/TODO.md).
+Compare two conditions using the same transcripts, model, and extraction settings:
 
-## 10. Requested Teaching-Staff Feedback
+1. **Independent meeting extraction:** Produce each meeting's summary and task list without reconciling earlier tasks.
+2. **Persistent reconciliation:** Use the same extraction plus existing task state and source-backed updates.
 
-The team requests feedback on:
+Score both against the expected current task list after each meeting, counting duplicates, stale open items, unsupported changes, and missing tasks. Separately compare a simple lexical task matcher with semantic reconciliation to test the value of the matching component. Evaluate on corrected transcripts and raw pipeline outputs to distinguish reasoning failures from speech and speaker errors.
 
-- Whether a visual coding-agent context-governance workbench is sufficiently differentiated and appropriately scoped
-- Whether paired governed and ungoverned executions support the proposed reliability claims
-- Whether prompt-only governance should remain a required experimental condition
-- Whether deterministic metadata-driven governance is an acceptable boundary for the MVP
-- Whether one open-source model plus a limited stronger-model comparison provides adequate implementation depth
-- Whether the proposed task, safety, token, latency, and false-rejection metrics are sufficient
+### Metrics and provisional success criteria
 
-## 11. Milestone 1 Submission Checklist
+These are proposed acceptance targets, not measured results. Calibrate them on development and validation data before freezing the test protocol.
 
-The following items are the proposed submission checklist. The team must verify them against the official Canvas instructions and grading rubric before treating the list as authoritative.
+| Output | Measurement | Proposed target |
+|---|---|---|
+| Extracted commitments | Precision and recall against adjudicated tasks; a match requires the correct owner and equivalent commitment | Precision >= 90%, recall >= 80% |
+| Cross-meeting updates | Correct task link and requested field/status change among automatic updates | Precision >= 95%; also report recall and automatic-update coverage |
+| Current task list | Correct owner, description, status, and supported due date after each meeting | Higher state accuracy than independent extraction; report absolute difference and raw counts |
+| False completion | Unsupported done transitions divided by all automatic done transitions | Zero observed in the held-out demo set, with sample size reported |
+| Human review burden | Fraction of candidate updates requiring review and review time | Report alongside accuracy; no success claim from routing everything to review |
+| Historical answers | Correct answer and citations that support each substantive claim | >= 90% supported-answer rate; separately score abstention on unanswerable questions |
+| Summaries | Human rubric for faithfulness, coverage, and usefulness | Mean >= 4/5 on each dimension, with no invented owner or deadline in the final demo |
+| Audio and speakers | Word error rate on selected hand-transcribed segments; diarization error and owner-attribution accuracy | Report by recording condition; diagnose impact on downstream task errors |
+| Plans | Confirmed final deadline respected; suggested dates labeled; no unaccepted step becomes a commitment | All deterministic checks pass |
+| System behavior | Duplicate ingestion, correction, deletion, consent gating, project isolation, citation navigation | All required end-to-end scenarios pass |
+| Efficiency | End-to-end and stage latency, tokens, cost per audio hour, and manual reconciliation time | Report hardware/model and median/range; set operational budget after pilot |
 
-### Proposal and planning -> convert the milestone 1 deliverable draft to google doc
+Summary rubric anchors: **1** = materially incorrect or unusable, **3** = mostly correct but requires substantive editing, **5** = faithful and immediately useful. Scores 2 and 4 represent intermediate quality. Reviewers score dimensions separately. An LLM judge may assist error triage but will not replace human ground truth for ownership, dates, completion, or citation support.
 
-- [X] Consolidate the project explanation and motivation into the two-paragraph format named in the grading rubric.
-- [X] Add a weekly check-in with progress made, top blockers or risks, and planned next steps. -> @weekly_journal.md
-- [X] Assign Bryan, Will, and Guadalupe as owners for the proposed workstreams and next-milestone tasks. Completed in Roles and Timeline.
-- [X] Name the preliminary front-end, back-end, storage, model-integration, evaluation, and design-framework choices, even if they remain provisional. Owner: Bryan. Completed in Preliminary implementation choices.
-- [X] State a rough compute and tooling budget, including local hardware assumptions, expected evaluation volume, API spending limit, and deployment cost assumptions. Owner: Guadalupe. Completed in Rough compute and tooling budget.
-- [X] Add a dedicated data and licensing plan covering fixture sources, access, ownership, permitted use, private-data exclusions, and third-party license tracking. Owner: Will. Completed in Data and licensing plan.
-- [X] Add a dedicated ethics and safety plan covering privacy, representativeness or bias, misuse, harmful code output, credential exposure, and concrete safeguards. Owner: Guadalupe. Completed in Ethics and safety plan.
-- [X] Add an explicit early timeline checkpoint to confirm fixture access, ownership, permitted use, private-data exclusions, and license-inventory responsibilities before evaluation fixtures are frozen. Owner: Bryan researches; group reviews. Completed in the Full-course timeline.
+### Minimum end-to-end demonstration
 
-### Submission artifacts
+Run a three-meeting sequence in which the first meeting creates two owned tasks and a decision, the second completes one task and changes the other's deadline, and the third leaves the remaining task open. Include an ambiguous mention that requests review, a cited historical question, and a correction. Re-import a recording to demonstrate no duplication, then delete a meeting to demonstrate removal of associated searchable content and explicit handling of dependent task evidence.
 
-- [X] Draft a pitch deck with six slides or fewer. Owner: Bryan. Completed in `docs/milestone_1/pitch_deck.md`.
-- [ ] Export the pitch deck, visually verify the final artifact, and import it into Google Slides. Owner: group.
-- [ ] Assemble the required components into a single PDF and verify the final export against Canvas instructions. Owner: group.
+## 7. Related Work and Product Positioning
+
+The following references inform component selection and evaluation; they are not evidence that the complete proposed workflow already works.
+
+| Source | Relevance and boundary |
+|---|---|
+| [Whisper, Radford et al., 2022](https://arxiv.org/abs/2212.04356) | Speech recognition foundation; assess our recordings rather than assuming accurate domain terminology or speaker attribution. |
+| [pyannote.audio](https://github.com/pyannote/pyannote-audio) | Speaker diarization tools; named attendee mapping remains a separate step. |
+| [QMSum, Zhong et al., 2021](https://arxiv.org/abs/2104.05938) | Query-based meeting summarization benchmark for retrieval and summary experiments; does not establish our longitudinal task-state ground truth. |
+| [MeetingBank, Hu et al., 2023](https://arxiv.org/abs/2305.17529) | Public meeting summarization benchmark; municipal meetings differ from recurring advisor/student meetings. |
+| [AMI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/corpus/) | Candidate meeting audio and annotation source; inspect available annotations and permitted use before selecting a subset. |
+
+Preliminary product review, checked September 8, 2026:
+
+| Product | Documented strength | Implication for this proposal |
+|---|---|---|
+| [Otter](https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview) | Consolidates assigned action items across conversations. | A cross-meeting task list alone is not a differentiator; evaluate evidence-backed updates from subsequent speech. |
+| [Granola](https://docs.granola.ai/help-center/getting-more-from-your-notes/chatting-with-your-meetings) | Supports questions across meeting notes, action items, and follow-ups. | Historical meeting chat alone is not a differentiator; focus on explicit task state and corrections. |
+| [Zoom AI Companion](https://news.zoom.com/zoom-agentic-ai/) | Describes task action, memory, and meeting action-item capture. | Broad claims that existing assistants stop at summaries are not defensible. |
+| [Google Meet notes](https://support.google.com/meet/answer/14754931?hl=en) | Produces meeting notes, summaries, and suggested next steps. | Test longitudinal reconciliation directly rather than inferring limitations from a notes feature description. |
+
+Our proposed distinction is a transparent, evaluated research-team workflow for matching later statements to prior commitments, resolving uncertainty, and inspecting task-change evidence. Product documentation does not establish which competitors support every detail of this workflow. A small hands-on comparison remains planned; we will not claim that no existing product tracks actions across meetings.
+
+## 8. Data, Licensing, and Responsible Use
+
+**Collection and consent:** Use our own consenting team or study-group meetings and purpose-recorded scenarios. For this project, require every participant's explicit agreement before recording and before processing uploaded audio, including disclosure of any external model provider. Offer a non-recorded alternative and deletion requests without penalty. This is our product policy, not a statement of jurisdiction-specific legal sufficiency; confirm institutional requirements before collecting research-group data.
+
+**Privacy:** Exclude student evaluations, health discussions, unpublished sensitive research, employer information, and other confidential material from development recordings. Give users a chance to exclude segments before external LLM processing. Automatic sensitive-content detection is assistive and cannot guarantee detection. Keep real recordings, transcripts, embeddings, and consent records outside Git and public demonstrations. Use fictional names and purpose-recorded examples for distributable artifacts.
+
+**Storage and deletion:** Default to local use on encrypted storage with restricted access. Proposed retention is raw audio for 30 days and retained transcripts/tasks until the participant requests deletion or the project ends, subject to participant agreement. Deletion removes associated indexes and cached outputs; unsupported surviving tasks are flagged for review. Do not retain deleted sensitive text merely to preserve an audit trail. Document provider retention and backup limitations before any upload to an external service.
+
+**Access:** Keep the first release single-user and local. Shared access is deferred until authorization is implemented. Within that release, all retrieval and task matching must enforce project boundaries. Summary sharing is an explicit user action.
+
+**Licensing:** Before using the sponsor's code, public datasets, model weights, or libraries, record the exact source, version, license or terms, access requirements, and redistribution permissions. Public availability alone does not imply permission to redistribute. Keep third-party assets separate from the repository's own license, and publish dataset references or preparation instructions when redistribution is not permitted.
+
+**Reliability and misuse:** Show uncertainty, source evidence, and corrections. Do not treat inferred task status as verified real-world performance or use the tool for student ranking. Test overlapping speech, accents, jargon, and pronoun ambiguity; report coverage limits. Generated plans remain suggestions. Model outputs cannot send messages, delete source material, or alter external calendars without a user-directed workflow.
+
+## 9. Team, Timeline, and Budget
+
+### Proposed ownership
+
+| Member | Primary responsibility | First implementation checkpoint |
+|---|---|---|
+| Will Liu | Data contracts, extraction, and reconciliation | Task schema, source references, update rules, and ambiguous-match handling |
+| Bryan Yang | Application, storage, and pipeline integration | Transcript-to-task vertical slice with editable tasks and timestamp navigation |
+| Guadalupe Cantera | Evaluation, data preparation, and quality | Consent/data protocol, sequence fixtures, annotation guide, and pilot metrics |
+
+All members review the proposal, consent practices, evaluation claims, and final demo. These assignments adapt the previous team's roles and need team confirmation.
+
+### Relative course timeline
+
+| Period | Deliverable |
+|---|---|
+| Weeks 1-2 / Milestone 1 | Proposal, scope, preliminary product review, team roles, and rubric verification; confirm sponsor-code access and data permissions before collection |
+| Weeks 3-5 / first implementation checkpoint | Consented sample sequence, transcript import, task extraction, persistence, editable UI, and initial audio integration |
+| Weeks 6-8 | Cross-meeting reconciliation, review/undo, person/project views, and citation-based search |
+| Weeks 9-10 | Suggested deadline plans, meeting brief, privacy/deletion checks, and validation pilot; freeze evaluation protocol |
+| Weeks 11-12 | Held-out evaluation, baseline comparison, failure analysis, and reliability fixes |
+| Weeks 13-14 | Reproduce clean setup, finalize results and limitations, and prepare report and demonstration |
+
+Week numbers describe proposed project phases, not verified course dates. Confirm the official milestone schedule before assigning calendar deadlines.
+
+### Planning budget
+
+Assume existing team laptops, no required hardware purchase, and local deployment. Propose a **$150 total project spending cap**: up to $100 for model/transcription usage, $30 for optional compute or demo hosting, and $20 contingency. These are allocations, not vendor price quotes or approved spending. No paid resource has been provisioned.
+
+Run a small pilot first, measure cost per audio hour and per reconciliation/question run, and calculate the affordable evaluation volume including retries and repeated runs. Start with the proposed 18 short recordings and at most three repeated model runs per evaluation condition where affordable. Cache unchanged transcripts and reduce secondary experiments before reducing the core held-out comparison. Record actual charges separately from estimated local compute cost.
+
+## 10. Risks and Mitigations
+
+| Risk | Response |
+|---|---|
+| Incorrect speaker assignment gives a task to the wrong person | Confirm speaker mappings, preserve unknown identities, and evaluate owner attribution separately. |
+| Similar tasks are incorrectly merged or completed | Require project/owner/evidence consistency; review ambiguity and prioritize update precision. |
+| Silence or partial progress is mistaken for completion | Require explicit supported state changes; include negative and partial-completion fixtures. |
+| Summaries or cleanup invent meaning | Preserve raw segments, attach evidence, and manually score faithfulness. |
+| Too little longitudinal data | Purpose-record linked scenarios and clearly separate controlled results from natural-meeting results. |
+| Audio integration delays the central contribution | Start with timestamped transcript imports while maintaining an audio-to-task final demo requirement. |
+| The proposal duplicates existing products | Compare documented capabilities honestly and emphasize measurable reconciliation behavior. |
+| Scope exceeds the available term | Prioritize the three-meeting task lifecycle; defer external integrations, slides, and native capture. |
+
+## 11. Milestone 1 Readiness and Requested Feedback
+
+### Draft completed
+
+- [x] Two-paragraph explanation and motivation
+- [x] Defined terms, user story, scope, and architecture
+- [x] Measurable AI outputs, baselines, annotation plan, and provisional targets
+- [x] Preliminary related work and sourced product positioning
+- [x] Data, consent, licensing, ethics, and deletion plan
+- [x] Proposed ownership, timeline, budget, and risks
+
+### Before submission
+
+- [ ] Verify official Canvas rubric, required length, deadline, and submission format.
+- [ ] Confirm team roles and review the new direction with teaching staff.
+- [ ] Confirm access and permitted reuse of the sponsor's code, or commit to the independent pipeline.
+- [ ] Confirm recording participants and institutional data requirements before collection.
+- [ ] Create any pitch deck and combined PDF required by the official rubric.
+
+Requested teaching-staff feedback: Is longitudinal commitment reconciliation an appropriate central contribution? Is the proposed small sequence dataset sufficient for the intended claims? Should backward planning remain required or become a stretch goal? Is transcript-first development acceptable provided the final demo includes audio ingestion?
