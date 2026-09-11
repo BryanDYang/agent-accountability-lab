@@ -43,3 +43,25 @@
 - Create the train, validation, and test split after the scenario fixture format and labeling rules are frozen.
 - Agree on the LLM-as-judge rubric and determine which qualities require human review instead of automated scoring.
 - Identify an appropriate open-source governance baseline for comparison.
+
+# Week 3
+
+## What got done
+
+- Met with the professor and TA twice to discuss the project direction, scope, and next steps.
+- Prepared a new proposal for a meeting follow-through assistant that tracks commitments, suggestions, and decisions across research meetings.
+- Received approval for the new project direction.
+- Continued refining the proposal, including the MVP scope, evaluation plan, team responsibilities, and data-handling requirements.
+- Worked on the pitch deck to present the new project and its proposed workflow.
+- Began setting up the repository again around the new direction, using the professor's code in `agent-sandbox` as the starting point.
+
+## Planned next steps
+
+- Finish the proposal and pitch deck for the Milestone 1 submission.
+- Complete the repository setup and update the documentation to reflect the new project.
+- Review the professor's code and identify the components to reuse for the initial implementation.
+
+## Current blockers and dependencies
+
+- Repository setup and integration depend on understanding the professor's existing code and how it fits the proposed workflow.
+- The proposal and pitch deck still need a final consistency review before submission.
