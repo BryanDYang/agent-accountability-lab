@@ -53,15 +53,21 @@
 - Received approval for the new project direction.
 - Continued refining the proposal, including the MVP scope, evaluation plan, team responsibilities, and data-handling requirements.
 - Worked on the pitch deck to present the new project and its proposed workflow.
-- Began setting up the repository again around the new direction, using the professor's code in `agent-sandbox` as the starting point.
+- Set up the repository for the new direction with an installable Python CLI scaffold, locked dependencies, updated setup documentation, and a GitHub Actions smoke-test workflow. All three CLI tests, lint, and formatting checks passed locally.
+- Reviewed `agent-sandbox` as a reference for packaging, dependency management, and offline testing. It is a simulation framework; access to the separate meeting-artifact pipeline still needs confirmation.
 
 ## Planned next steps
 
 - Finish the proposal and pitch deck for the Milestone 1 submission.
-- Complete the repository setup and update the documentation to reflect the new project.
-- Review the professor's code and identify the components to reuse for the initial implementation.
+- Assemble the required submission PDF and include the repository URL and this weekly check-in.
+- Confirm the proposed next-milestone ownership: Will for transcript/task contracts and extraction, Bryan for CLI/import integration, and Guadalupe for fixtures, annotations, and evaluation.
+- Prepare one synthetic three-meeting development sequence with expected commitments, owners, source references, and task states after each meeting.
+- Build the initial evaluation scorer and verify it against known correct and deliberately incorrect outputs before running the first extraction baseline.
+- Confirm reusable sponsor components and the meeting-artifact format; begin with timestamped transcript imports while audio integration is being clarified.
 
 ## Current blockers and dependencies
 
-- Repository setup and integration depend on understanding the professor's existing code and how it fits the proposed workflow.
-- The proposal and pitch deck still need a final consistency review before submission.
+- **Meeting-pipeline access:** `agent-sandbox` does not establish access to the recording/transcription pipeline. Confirm the artifact format and permitted reuse; synthetic timestamped transcripts allow development to proceed meanwhile.
+- **Evaluation ground truth:** We still need a shared annotation guide and expected task states. Start with one small development sequence and resolve disagreements before expanding the dataset.
+- **Model and operating assumptions:** Select a model after a small quality/cost pilot, and confirm the initial OS and calendar integration. Keep API calls out of the offline CI smoke tests.
+- **Submission readiness:** Finish the proposal/deck consistency review and PDF packaging. Verify a successful hosted CI run and repository issue labels before submission; local checks alone do not confirm GitHub configuration.

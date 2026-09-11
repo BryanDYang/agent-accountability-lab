@@ -10,7 +10,7 @@
 
 **Repository:** [github.com/BryanDYang/ai-capstone](https://github.com/BryanDYang/ai-capstone)
 
-**Status:** Working proposal for the new project direction
+**Status:** Milestone 1 proposal incorporating team submission-draft input
 
 **Updated:** September 11, 2026
 
@@ -128,11 +128,13 @@ No sponsor code is assumed available or licensed until inspected. Transcript imp
 
 ### Data and experimental design
 
-Target 18 short meetings arranged into six independent three-meeting project sequences, using consenting team meetings and purpose-recorded scenarios. Split whole sequences into three development, one validation, and two held-out test sequences. Keep scenario variants and overlapping source material together to prevent leakage. These are pilot-scale targets, not a claim of statistical representativeness. Report counts and uncertainty, and expand the held-out set if feasible.
+Start with a pilot of 6-8 short meetings from consenting team meetings and purpose-recorded scenarios, including at least two complete three-meeting project sequences. Use this pilot to refine the annotation guide, estimate costs, and confirm data availability; it is not the full held-out evaluation. Ask teaching staff whether existing pre-recorded advisor/student sequences are available with appropriate permissions.
+
+The expanded evaluation plan, subject to data availability and the $75 budget, is 18 short meetings across six independent three-meeting sequences: three development, one validation, and two held-out test sequences. Keep whole sequences, scenario variants, and overlapping source material together to prevent leakage. Do not reuse pilot material used for tuning as held-out test data. If the expanded set is infeasible, finalize and document a smaller sequence-level split before testing and narrow the claims accordingly. These are pilot-scale targets, not a claim of statistical representativeness; report actual counts and uncertainty.
 
 Use QMSum as a supplementary retrieval and summarization benchmark after checking its terms; it does not replace longitudinal task-state annotations.
 
-Two team members independently annotate the held-out commitments, owners, deadlines, decisions, links between meetings, and state changes, then resolve disagreements before scoring. Include professor suggestions and their later acceptance or dismissal, completion, blocked work, partial completion, reassignment, changed deadlines, dropped tasks, duplicate mentions, similar tasks in different projects, uncertain speakers, negation, and tasks never mentioned again. Include answerable and unanswerable historical questions. Freeze prompts and thresholds before held-out evaluation.
+Two team members independently annotate the held-out commitments, owners, deadlines, decisions, links between meetings, and state changes, then resolve disagreements before scoring. Include professor suggestions and their later acceptance or dismissal, completion, blocked work, partial completion, reassignment, changed deadlines, dropped tasks, duplicate mentions, similar tasks in different projects, uncertain speakers, negation, and tasks never mentioned again. Score attribution hallucination separately, including tasks or decisions assigned to the wrong speaker despite valid output schemas. Include answerable and unanswerable historical questions. Freeze prompts and thresholds before held-out evaluation.
 
 Compare two conditions using the same transcripts, model, and extraction settings:
 
@@ -203,17 +205,23 @@ Our proposed distinction is a transparent, evaluated research-team workflow for 
 
 ## 8. Data, Licensing, and Responsible Use
 
-**Collection and consent:** Use our own consenting team or study-group meetings and purpose-recorded scenarios. For this project, require every participant's explicit agreement before recording and before processing uploaded audio, including disclosure of any external model provider. Offer a non-recorded alternative and deletion requests without penalty. This is our product policy, not a statement of jurisdiction-specific legal sufficiency; confirm institutional requirements before collecting research-group data.
+**Data Sources and Evaluation:** For development and evaluation, we will mainly use purpose-recorded scenarios and meetings from our own team or study groups where everyone has agreed to participate. These meetings will be designed to include the kinds of situations our system needs to handle, such as commitments, professor suggestions, decisions, task updates, blockers, changed deadlines, and ambiguous references to things discussed in previous meetings. We will not assume that real research lab meetings, sponsor recordings, or existing meeting archives are available for us to use. If we later use real research meetings, we will first confirm that we have participant consent and permission to process that data. We will also keep controlled/test scenarios separate from natural meetings when reporting our evaluation results.
 
-**Privacy:** Exclude student evaluations, health discussions, unpublished sensitive research, employer information, and other confidential material from development recordings. Give users a chance to exclude segments before external LLM processing. Automatic sensitive-content detection is assistive and cannot guarantee detection. Keep real recordings, transcripts, embeddings, and consent records outside Git and public demonstrations. Use fictional names and purpose-recorded examples for distributable artifacts.
+**Consent and Participant Control:** Everyone in a meeting must agree to the recording and processing policy before recording begins and before uploaded audio is processed. Participants should know what is being collected, what information the system will keep, whether any meeting content is being sent to an external AI provider, how long the data will be retained, and how they can request deletion. We will document the applicable recording and processing requirements for each meeting while retaining every participant's explicit agreement as our project policy. This policy is not a claim of jurisdiction-specific legal sufficiency. Simply uploading a recording does not mean that everyone in that recording consented. Participants should also have a non-recorded option and be able to request that a meeting, or specific parts of a meeting where possible, are excluded from AI processing. Before using real research-group data, we will confirm any additional institutional requirements that apply.
 
-**Storage and deletion:** Default to local use on encrypted storage with restricted access. Proposed retention is raw audio for 30 days and retained transcripts/tasks until the participant requests deletion or the project ends, subject to participant agreement. Deletion removes associated indexes and cached outputs; unsupported surviving tasks are flagged for review. Do not retain deleted sensitive text merely to preserve an audit trail. Document provider retention and backup limitations before any upload to an external service.
+**Privacy and Data Minimization:** Research meetings can include information that should not become part of a long-term AI memory, such as unpublished research (including patent-pending architectures), personnel discussions, credentials, grant information, or other confidential material. Our goal is therefore to store only what the system actually needs for its longitudinal-memory functions. Persistent memory should focus on supported decisions, commitments, task updates, professor suggestions, and the evidence needed to verify them rather than saving unrelated conversation indefinitely. For development and evaluation, we will avoid intentionally including sensitive information that is not necessary for testing the system. Real recordings, transcripts, embeddings, speaker mappings, and extracted project data will not be committed to Git or included in public demos.
 
-**Access:** Keep the first release single-user and local. Shared access is deferred until authorization is implemented. Within that release, all retrieval and task matching must enforce project boundaries. Summary sharing is an explicit user action.
+**Storage, Retention, and Deletion:** The MVP will be local-first and single-user, with meeting data stored on access-controlled, encrypted local storage. We also recognize that deleting the original audio is not enough. A meeting can create a transcript, embeddings, search indexes, summaries, tasks, decisions, speaker mappings, and other derived data. If a meeting or portion of a meeting is deleted, the system should also remove the related searchable and cached artifacts. Rather than permanently erasing the source audio the moment deletion is requested, we will route it through the OS's native trash first, so it stays recoverable for a short window in case the deletion was accidental or a dispute requires the original evidence, before it is purged for good. The recovery window and purge procedure must be defined and communicated before collection; moving audio to trash is not permanent deletion. Trashed audio must be excluded from ingestion and retrieval during that window. If deleted evidence was the only support for an existing task or decision, that record should be flagged for review rather than continuing to appear as verified information. Retention periods will be decided and clearly communicated before we begin collecting evaluation data.
 
-**Licensing:** Before using the sponsor's code, public datasets, model weights, or libraries, record the exact source, version, license or terms, access requirements, and redistribution permissions. Public availability alone does not imply permission to redistribute. Keep third-party assets separate from the repository's own license, and publish dataset references or preparation instructions when redistribution is not permitted.
+**Evidence, Attribution, and Human Review:** Because this system creates a memory that carries information across meetings, we do not want one incorrect AI inference to become a permanent part of that history. The system should preserve evidence for the tasks, decisions, and state changes it creates. A professor saying, "someone should try this" should not automatically become a commitment assigned to a student, and misattributing a task or decision to the wrong speaker is a failure mode we are treating as its own testable category (attribution hallucination) rather than assuming schema-enforced extraction rules it out. Similarly, silence about a task in the next meeting should not mean it was completed or abandoned, and partial progress should not automatically mean completion. When ownership, task matching, or state changes are ambiguous, the system should flag the item for human review instead of making the decision on its own. Users should also be able to correct speaker mappings, extracted records, and reconciliation decisions if the system gets something wrong.
 
-**Reliability and misuse:** Show uncertainty, source evidence, and corrections. Do not treat inferred task status as verified real-world performance or use the tool for student ranking. Test overlapping speech, accents, jargon, and pronoun ambiguity; report coverage limits. Generated plans remain suggestions. Model outputs cannot send messages, delete source material, or alter external calendars without a user-directed workflow.
+**Grounded Summaries and Historical Q&A:** Summaries and historical answers should be grounded in actual meeting evidence rather than the model filling in missing information. Important claims should point back to the relevant meeting and transcript timestamp, with an audio reference when the original audio is still available. If the system does not have enough evidence to answer a question, it should say that rather than make its best guess. For example, discussing an experiment is not the same thing as explicitly committing to complete it. Our evaluation will include both answerable and intentionally unanswerable questions so we can test whether the system retrieves the right evidence and knows when it should not make a claim.
+
+**Project Isolation and External Actions:** Information from one research project should not accidentally appear in another project's results. Retrieval and reconciliation will therefore be scoped to the selected project. We will also treat transcript content as untrusted input; something said during a meeting cannot override system instructions or authorize the system to take an external action. The model will not independently send messages, delete recordings, modify calendars, or take similar actions. Features such as reminders, calendar updates, or summary sharing will only happen through workflows that the user has explicitly enabled.
+
+**External AI Services, Licensing, and Third-Party Data:** Before sending meeting content to an external AI or API provider, we will document what data leaves the local system, why it needs to be sent, and the provider's relevant retention and data-use policies. Participants should know when their meeting content may be processed externally, and we will avoid sending excluded or unnecessary portions of a meeting where possible. We will also document the source, version, license, access restrictions, and redistribution permissions for any sponsor code, public datasets, pretrained models, libraries, or other third-party assets we use. Something being publicly available does not automatically mean we have permission to redistribute it. Sponsor code will only be incorporated after we confirm that we are allowed to use it.
+
+**Responsible Use and Non-Goals:** [TBD] is meant to help research teams remember and follow up on what was discussed across meetings. It is not meant to evaluate the people in those meetings. The system will not create productivity or performance scores, rank students or researchers, use speaking frequency or number of assigned tasks as a measure of contribution, infer sensitive personal characteristics, or monitor meetings without participant consent. It also will not treat something reported during a meeting as independent proof that the work happened in the real world. The system's job is to accurately represent and connect what was said in the meetings, while keeping the original evidence available for verification. Known limitations, including overlapping speech, technical jargon, uncertain speakers, and ambiguous references, will be evaluated and reported rather than hidden.
 
 ## 9. Team, Timeline, and Budget
 
@@ -232,7 +240,7 @@ All members review the proposal, consent practices, evaluation claims, and final
 | Period                                      | Deliverable                                                                                                                                          |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Weeks 1-2 / Milestone 1                     | Proposal, scope, preliminary product review, team roles, and rubric verification; confirm sponsor-code access and data permissions before collection |
-| Weeks 3-5 / first implementation checkpoint | Consented sample sequence, transcript import, task extraction, persistence, CLI controls, folder watching, and calendar context                      |
+| Weeks 3-5 / first implementation checkpoint | Initial evaluation harness and extraction baseline, synthetic development sequence, consented samples when available, transcript import, persistence, and initial CLI/calendar integration |
 | Weeks 6-8                                   | Cross-meeting reconciliation, review/undo, person/project inspection, and citation-based search                                                      |
 | Weeks 9-10                                  | Suggestion tracking, meeting brief, privacy/deletion checks, and validation pilot; freeze evaluation protocol                                        |
 | Weeks 11-12                                 | Held-out evaluation, baseline comparison, failure analysis, and reliability fixes                                                                    |
@@ -240,11 +248,36 @@ All members review the proposal, consent practices, evaluation claims, and final
 
 Week numbers describe proposed project phases, not verified course dates. Confirm the official milestone schedule before assigning calendar deadlines.
 
+### Draft evaluation-harness checkpoint for Milestone 2
+
+By the next milestone, aim to run a small, reproducible evaluation from timestamped transcripts to a saved score report. This checkpoint establishes the evaluation machinery; it does not require the full audio pipeline or demonstrate final model quality.
+
+| Proposed owner | Deliverable | Completion check |
+| --- | --- | --- |
+| Guadalupe Cantera | One synthetic three-meeting development sequence and a short annotation guide | Expected commitments, owners, source segments, and task states are labeled after each meeting and reviewed by a second team member. Include completion, a changed deadline, an unaccepted suggestion, an ambiguous reference, and a task that is not mentioned again. |
+| Will Liu | Transcript/task output contract and initial independent-meeting extraction baseline | Baseline outputs use the agreed schema and retain source IDs. Record the model, prompt version, and run settings. Define how semantically equivalent commitments are matched to annotations, with human adjudication where needed. |
+| Bryan Yang | Evaluation runner and offline scorer tests | One documented command loads fixtures and saved predictions and produces a report. A correct prediction fixture receives the expected score; deliberately wrong owners, duplicate tasks, unsupported completion, and invalid citations are detected. CI exercises this without API calls. |
+
+The first report should include task precision/recall, owner accuracy, duplicate counts, unsupported completion counts, and source-reference validity, with numerators and denominators. Once reconciliation is runnable, score the expected task state after each meeting and compare it with the independent-meeting baseline on the same sequence. Keep this sequence in development only; it must not become held-out evidence. Live model runs are separate from deterministic CI tests and record usage and latency. These assignments and the checkpoint are drafts for team confirmation.
+
 ### Planning budget
 
-Assume existing team laptops, no required hardware purchase, and local deployment. Propose a **$150 total project spending cap**: up to $100 for model/transcription usage, $30 for optional compute or demo hosting, and $20 contingency. These are allocations, not vendor price quotes or approved spending. No paid resource has been provisioned.
+Development will use existing team laptops, local storage, GitHub, SQLite, and free or open-source development tools where suitable. We do not plan to train or fine-tune a large model, buy dedicated GPU hardware, or provision a paid production server or database for the local, single-user MVP.
 
-Run a small pilot first, measure cost per audio hour and per reconciliation/question run, and calculate the affordable evaluation volume including retries and repeated runs. Start with the proposed 18 short recordings and at most three repeated model runs per evaluation condition where affordable. Cache unchanged transcripts and reduce secondary experiments before reducing the core held-out comparison. Record actual charges separately from estimated local compute cost.
+Propose an initial **$75 total project spending cap**:
+
+| Category | Proposed allocation and purpose |
+| --- | --- |
+| Model/API usage | Up to $50 for extraction, reconciliation, rubric-graded summarization, historical Q&A, and evaluation |
+| Hardware | $0 expected; use hardware already owned by the team |
+| Local storage/deployment | $0 incremental spending expected; use local storage and SQLite, with the sponsor pipeline or local Whisper/pyannote.audio subject to access, license, and hardware checks |
+| Contingency | Up to $25 for limited paid transcription, temporary compute, or another necessary integration/evaluation service when existing resources are insufficient |
+
+These are proposed allocations, not approved spending or verified vendor quotes. No paid resource has been provisioned. The budgeting scenario allows for up to 18 short meetings across six three-meeting sequences, while the initial pilot targets 6-8 meetings as described in Section 6. Actual affordability depends on the selected model, transcript lengths, evaluation conditions, repeated runs, and retries. Validate the full evaluation matrix against the $50 API allocation using pilot measurements.
+
+Run a small pilot first and measure actual cost per meeting, per audio hour, and per evaluation run. Verify the selected provider's current rates and the exact model/library terms before use. Cache unchanged transcripts, embeddings, and other intermediate outputs, with invalidation after corrections or deletion. Record API charges and any paid compute separately from estimated local compute costs.
+
+If projected spending approaches $75, prioritize the core three-meeting longitudinal evaluation, reduce unnecessary repeated experiments, use lower-cost models only when they meet quality requirements, and reuse valid cached outputs before proposing a budget increase. The final report will include actual spending and measured unit costs.
 
 ## 10. Risks and Mitigations
 
@@ -259,23 +292,10 @@ Run a small pilot first, measure cost per audio hour and per reconciliation/ques
 | The proposal duplicates existing products                     | Compare documented capabilities honestly and emphasize measurable reconciliation behavior.                       |
 | Scope exceeds the available term                              | Prioritize the three-meeting task lifecycle; defer notifications, backward planning, slides, and native capture. |
 
-## 11. Milestone 1 Readiness and Requested Feedback
+## 11. Teaching-Staff Feedback and Next Steps
 
-### Draft completed
+During Week 3, the team met with the professor and TA twice to discuss the revised project direction, scope, and next steps. The team reports receiving approval to proceed with the meeting follow-through assistant. This records approval of the direction, not confirmation of every proposed metric, dataset choice, or integration detail.
 
-- [X] Two-paragraph explanation and motivation
-- [X] Defined terms, user story, scope, and architecture
-- [X] Measurable AI outputs, baselines, annotation plan, and provisional targets
-- [X] Preliminary related work and sourced product positioning
-- [X] Data, consent, licensing, ethics, and deletion plan
-- [X] Proposed ownership, timeline, budget, and risks
+Next steps are to finalize the proposal and pitch artifact, confirm task ownership, clarify access to the sponsor's meeting pipeline, and build the initial evaluation harness described in Section 9. The repository scaffold and local smoke checks are in place. The [weekly check-in](../weekly_journal.md#week-3) records progress, top blockers, and planned work and should be included in the submission PDF.
 
-### Before submission
-
-- [ ] Verify official Canvas rubric, required length, deadline, and submission format.
-- [ ] Confirm team roles and review the new direction with teaching staff.
-- [ ] Confirm access and permitted reuse of the sponsor's code, or commit to the independent pipeline.
-- [ ] Confirm recording participants and institutional data requirements before collection.
-- [ ] Finalize the pitch artifact (a deck of six slides or fewer, or a 3-5 minute concept video) and assemble the required single PDF submission.
-
-Requested teaching-staff feedback: Is longitudinal commitment reconciliation an appropriate central contribution? Is the proposed small sequence dataset sufficient for the intended claims? Is independent per-meeting extraction the right primary baseline? Should audio processing remain required, or can the sponsor pipeline serve as an upstream component? Are pre-recorded advisor/student meeting sequences with tasks and deadlines available?
+Remaining questions for teaching staff: Is the proposed small sequence dataset sufficient for the intended claims? Is independent per-meeting extraction the right primary baseline? Should audio processing remain required, or can the sponsor pipeline serve as an upstream component? Are pre-recorded advisor/student meeting sequences with tasks and deadlines available?
