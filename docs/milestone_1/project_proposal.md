@@ -12,8 +12,6 @@
 
 **Updated:** September 8, 2026
 
-Course, track, and team names are carried forward from the previous proposal. Roles, schedule, budget, and evaluation targets below are proposed for team review. Official Canvas requirements and submission dates have not yet been verified.
-
 ## 1. Project Explanation and Motivation
 
 Recurring research meetings produce commitments, decisions, and deadlines that are difficult to maintain across weeks. An advisor may promise to send papers, a student may agree to rerun an experiment, and both may leave without a dependable record of who owes what. Transcripts and summaries help people remember a meeting, but follow-through requires connecting later conversations to earlier commitments, recognizing changes, and preserving the evidence behind each update. The project sponsor already has a recording-to-transcript-and-summary tool; the proposed project builds the assistant layer that turns those individual meeting records into useful ongoing project memory.
@@ -39,18 +37,18 @@ The MVP provides in-app summaries and reminders. Automatic email delivery and ex
 
 ## 3. Terms and Observable Outputs
 
-| Term | Definition and output |
-|---|---|
-| Transcription | Converts speech into timestamped text; it does not establish speaker identity. |
-| Transcript cleanup | Edits recognition errors, punctuation, and filler without changing meaning; it produces a separate cleaned version linked to the original segments. |
-| Diarization | Separates stretches of audio by voice; it produces speaker labels, not names. |
-| Speaker identification | Maps speaker labels to attendee names with user confirmation; an attendee list alone does not establish who spoke. |
-| Action item | A named person's commitment to a specific task, with an optional due date, status, and source timestamp; an unowned suggestion remains a candidate for clarification. |
-| Decision | A statement settling a question, stored with its source; a later reversal is a linked new decision rather than an overwrite. |
-| Reconciliation | Matches a later statement to an existing commitment and proposes or records an evidenced change; similar wording alone is insufficient. |
-| Summary | A concise account of discussion, decisions, and commitments evaluated for faithfulness, coverage, and usefulness. |
-| Suggested plan | Proposed steps working backward from a confirmed deadline; its invented intermediate dates are not meeting commitments. |
-| Consent | Recorded agreement by every participant to the stated recording and processing policy before audio processing; an upload alone is not evidence of everyone's agreement. |
+| Term                   | Definition and output                                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Transcription          | Converts speech into timestamped text; it does not establish speaker identity.                                                                                          |
+| Transcript cleanup     | Edits recognition errors, punctuation, and filler without changing meaning; it produces a separate cleaned version linked to the original segments.                     |
+| Diarization            | Separates stretches of audio by voice; it produces speaker labels, not names.                                                                                           |
+| Speaker identification | Maps speaker labels to attendee names with user confirmation; an attendee list alone does not establish who spoke.                                                      |
+| Action item            | A named person's commitment to a specific task, with an optional due date, status, and source timestamp; an unowned suggestion remains a candidate for clarification.   |
+| Decision               | A statement settling a question, stored with its source; a later reversal is a linked new decision rather than an overwrite.                                            |
+| Reconciliation         | Matches a later statement to an existing commitment and proposes or records an evidenced change; similar wording alone is insufficient.                                 |
+| Summary                | A concise account of discussion, decisions, and commitments evaluated for faithfulness, coverage, and usefulness.                                                       |
+| Suggested plan         | Proposed steps working backward from a confirmed deadline; its invented intermediate dates are not meeting commitments.                                                 |
+| Consent                | Recorded agreement by every participant to the stated recording and processing policy before audio processing; an upload alone is not evidence of everyone's agreement. |
 
 ## 4. Scope and Deliverable
 
@@ -108,16 +106,16 @@ Processing is idempotent: re-uploading or retrying a meeting must not duplicate 
 
 ### Preliminary implementation choices
 
-| Layer | Proposed choice and purpose |
-|---|---|
-| Interface | React, TypeScript, and a consistent accessible component library for transcript, task, and review views |
-| Service | Python with FastAPI and schema validation for ingestion, extraction, and task operations |
-| Speech | Inspect the sponsor's existing pipeline first; use Whisper and pyannote.audio if reuse is unavailable or unsuitable |
-| Persistence | SQLite for the local MVP, local private audio storage, and timestamped transcript segments |
-| Retrieval | Project-filtered text search plus embeddings when pilot evidence justifies semantic retrieval; keep source IDs attached throughout |
+| Layer             | Proposed choice and purpose                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Interface         | React, TypeScript, and a consistent accessible component library for transcript, task, and review views                                 |
+| Service           | Python with FastAPI and schema validation for ingestion, extraction, and task operations                                                |
+| Speech            | Inspect the sponsor's existing pipeline first; use Whisper and pyannote.audio if reuse is unavailable or unsuitable                     |
+| Persistence       | SQLite for the local MVP, local private audio storage, and timestamped transcript segments                                              |
+| Retrieval         | Project-filtered text search plus embeddings when pilot evidence justifies semantic retrieval; keep source IDs attached throughout      |
 | Model integration | One configured LLM behind a small adapter, with structured outputs and bounded retries; exact model selected after a quality/cost pilot |
-| Verification | Pytest for extraction/state behavior and Playwright for upload, review, correction, and citation workflows |
-| Observability | Record model/prompt versions, usage, processing failures, stage latency, and cost per hour of audio |
+| Verification      | Pytest for extraction/state behavior and Playwright for upload, review, correction, and citation workflows                              |
+| Observability     | Record model/prompt versions, usage, processing failures, stage latency, and cost per hour of audio                                     |
 
 No sponsor code is assumed available or licensed until inspected. Transcript imports allow development of the core follow-through workflow while audio integration proceeds. Prompt caching is an optional measured optimization after correctness is established.
 
@@ -140,19 +138,19 @@ Score both against the expected current task list after each meeting, counting d
 
 These are proposed acceptance targets, not measured results. Calibrate them on development and validation data before freezing the test protocol.
 
-| Output | Measurement | Proposed target |
-|---|---|---|
-| Extracted commitments | Precision and recall against adjudicated tasks; a match requires the correct owner and equivalent commitment | Precision >= 90%, recall >= 80% |
-| Cross-meeting updates | Correct task link and requested field/status change among automatic updates | Precision >= 95%; also report recall and automatic-update coverage |
-| Current task list | Correct owner, description, status, and supported due date after each meeting | Higher state accuracy than independent extraction; report absolute difference and raw counts |
-| False completion | Unsupported done transitions divided by all automatic done transitions | Zero observed in the held-out demo set, with sample size reported |
-| Human review burden | Fraction of candidate updates requiring review and review time | Report alongside accuracy; no success claim from routing everything to review |
-| Historical answers | Correct answer and citations that support each substantive claim | >= 90% supported-answer rate; separately score abstention on unanswerable questions |
-| Summaries | Human rubric for faithfulness, coverage, and usefulness | Mean >= 4/5 on each dimension, with no invented owner or deadline in the final demo |
-| Audio and speakers | Word error rate on selected hand-transcribed segments; diarization error and owner-attribution accuracy | Report by recording condition; diagnose impact on downstream task errors |
-| Plans | Confirmed final deadline respected; suggested dates labeled; no unaccepted step becomes a commitment | All deterministic checks pass |
-| System behavior | Duplicate ingestion, correction, deletion, consent gating, project isolation, citation navigation | All required end-to-end scenarios pass |
-| Efficiency | End-to-end and stage latency, tokens, cost per audio hour, and manual reconciliation time | Report hardware/model and median/range; set operational budget after pilot |
+| Output                | Measurement                                                                                                  | Proposed target                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Extracted commitments | Precision and recall against adjudicated tasks; a match requires the correct owner and equivalent commitment | Precision >= 90%, recall >= 80%                                                              |
+| Cross-meeting updates | Correct task link and requested field/status change among automatic updates                                  | Precision >= 95%; also report recall and automatic-update coverage                           |
+| Current task list     | Correct owner, description, status, and supported due date after each meeting                                | Higher state accuracy than independent extraction; report absolute difference and raw counts |
+| False completion      | Unsupported done transitions divided by all automatic done transitions                                       | Zero observed in the held-out demo set, with sample size reported                            |
+| Human review burden   | Fraction of candidate updates requiring review and review time                                               | Report alongside accuracy; no success claim from routing everything to review                |
+| Historical answers    | Correct answer and citations that support each substantive claim                                             | >= 90% supported-answer rate; separately score abstention on unanswerable questions          |
+| Summaries             | Human rubric for faithfulness, coverage, and usefulness                                                      | Mean >= 4/5 on each dimension, with no invented owner or deadline in the final demo          |
+| Audio and speakers    | Word error rate on selected hand-transcribed segments; diarization error and owner-attribution accuracy      | Report by recording condition; diagnose impact on downstream task errors                     |
+| Plans                 | Confirmed final deadline respected; suggested dates labeled; no unaccepted step becomes a commitment         | All deterministic checks pass                                                                |
+| System behavior       | Duplicate ingestion, correction, deletion, consent gating, project isolation, citation navigation            | All required end-to-end scenarios pass                                                       |
+| Efficiency            | End-to-end and stage latency, tokens, cost per audio hour, and manual reconciliation time                    | Report hardware/model and median/range; set operational budget after pilot                   |
 
 Summary rubric anchors: **1** = materially incorrect or unusable, **3** = mostly correct but requires substantive editing, **5** = faithful and immediately useful. Scores 2 and 4 represent intermediate quality. Reviewers score dimensions separately. An LLM judge may assist error triage but will not replace human ground truth for ownership, dates, completion, or citation support.
 
@@ -164,22 +162,22 @@ Run a three-meeting sequence in which the first meeting creates two owned tasks 
 
 The following references inform component selection and evaluation; they are not evidence that the complete proposed workflow already works.
 
-| Source | Relevance and boundary |
-|---|---|
-| [Whisper, Radford et al., 2022](https://arxiv.org/abs/2212.04356) | Speech recognition foundation; assess our recordings rather than assuming accurate domain terminology or speaker attribution. |
-| [pyannote.audio](https://github.com/pyannote/pyannote-audio) | Speaker diarization tools; named attendee mapping remains a separate step. |
-| [QMSum, Zhong et al., 2021](https://arxiv.org/abs/2104.05938) | Query-based meeting summarization benchmark for retrieval and summary experiments; does not establish our longitudinal task-state ground truth. |
-| [MeetingBank, Hu et al., 2023](https://arxiv.org/abs/2305.17529) | Public meeting summarization benchmark; municipal meetings differ from recurring advisor/student meetings. |
-| [AMI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/corpus/) | Candidate meeting audio and annotation source; inspect available annotations and permitted use before selecting a subset. |
+| Source                                                           | Relevance and boundary                                                                                                                          |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Whisper, Radford et al., 2022](https://arxiv.org/abs/2212.04356) | Speech recognition foundation; assess our recordings rather than assuming accurate domain terminology or speaker attribution.                   |
+| [pyannote.audio](https://github.com/pyannote/pyannote-audio)      | Speaker diarization tools; named attendee mapping remains a separate step.                                                                      |
+| [QMSum, Zhong et al., 2021](https://arxiv.org/abs/2104.05938)     | Query-based meeting summarization benchmark for retrieval and summary experiments; does not establish our longitudinal task-state ground truth. |
+| [MeetingBank, Hu et al., 2023](https://arxiv.org/abs/2305.17529)  | Public meeting summarization benchmark; municipal meetings differ from recurring advisor/student meetings.                                      |
+| [AMI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/corpus/)     | Candidate meeting audio and annotation source; inspect available annotations and permitted use before selecting a subset.                       |
 
 Preliminary product review, checked September 8, 2026:
 
-| Product | Documented strength | Implication for this proposal |
-|---|---|---|
-| [Otter](https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview) | Consolidates assigned action items across conversations. | A cross-meeting task list alone is not a differentiator; evaluate evidence-backed updates from subsequent speech. |
-| [Granola](https://docs.granola.ai/help-center/getting-more-from-your-notes/chatting-with-your-meetings) | Supports questions across meeting notes, action items, and follow-ups. | Historical meeting chat alone is not a differentiator; focus on explicit task state and corrections. |
-| [Zoom AI Companion](https://news.zoom.com/zoom-agentic-ai/) | Describes task action, memory, and meeting action-item capture. | Broad claims that existing assistants stop at summaries are not defensible. |
-| [Google Meet notes](https://support.google.com/meet/answer/14754931?hl=en) | Produces meeting notes, summaries, and suggested next steps. | Test longitudinal reconciliation directly rather than inferring limitations from a notes feature description. |
+| Product                                                                                                | Documented strength                                                    | Implication for this proposal                                                                                     |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [Otter](https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview)                   | Consolidates assigned action items across conversations.               | A cross-meeting task list alone is not a differentiator; evaluate evidence-backed updates from subsequent speech. |
+| [Granola](https://docs.granola.ai/help-center/getting-more-from-your-notes/chatting-with-your-meetings) | Supports questions across meeting notes, action items, and follow-ups. | Historical meeting chat alone is not a differentiator; focus on explicit task state and corrections.              |
+| [Zoom AI Companion](https://news.zoom.com/zoom-agentic-ai/)                                             | Describes task action, memory, and meeting action-item capture.        | Broad claims that existing assistants stop at summaries are not defensible.                                       |
+| [Google Meet notes](https://support.google.com/meet/answer/14754931?hl=en)                              | Produces meeting notes, summaries, and suggested next steps.           | Test longitudinal reconciliation directly rather than inferring limitations from a notes feature description.     |
 
 Our proposed distinction is a transparent, evaluated research-team workflow for matching later statements to prior commitments, resolving uncertainty, and inspecting task-change evidence. Product documentation does not establish which competitors support every detail of this workflow. A small hands-on comparison remains planned; we will not claim that no existing product tracks actions across meetings.
 
@@ -201,24 +199,24 @@ Our proposed distinction is a transparent, evaluated research-team workflow for 
 
 ### Proposed ownership
 
-| Member | Primary responsibility | First implementation checkpoint |
-|---|---|---|
-| Will Liu | Data contracts, extraction, and reconciliation | Task schema, source references, update rules, and ambiguous-match handling |
-| Bryan Yang | Application, storage, and pipeline integration | Transcript-to-task vertical slice with editable tasks and timestamp navigation |
-| Guadalupe Cantera | Evaluation, data preparation, and quality | Consent/data protocol, sequence fixtures, annotation guide, and pilot metrics |
+| Member            | Primary responsibility                         | First implementation checkpoint                                                |
+| ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| Will Liu          | Data contracts, extraction, and reconciliation | Task schema, source references, update rules, and ambiguous-match handling     |
+| Bryan Yang        | Application, storage, and pipeline integration | Transcript-to-task vertical slice with editable tasks and timestamp navigation |
+| Guadalupe Cantera | Evaluation, data preparation, and quality      | Consent/data protocol, sequence fixtures, annotation guide, and pilot metrics  |
 
 All members review the proposal, consent practices, evaluation claims, and final demo. These assignments adapt the previous team's roles and need team confirmation.
 
 ### Relative course timeline
 
-| Period | Deliverable |
-|---|---|
-| Weeks 1-2 / Milestone 1 | Proposal, scope, preliminary product review, team roles, and rubric verification; confirm sponsor-code access and data permissions before collection |
-| Weeks 3-5 / first implementation checkpoint | Consented sample sequence, transcript import, task extraction, persistence, editable UI, and initial audio integration |
-| Weeks 6-8 | Cross-meeting reconciliation, review/undo, person/project views, and citation-based search |
-| Weeks 9-10 | Suggested deadline plans, meeting brief, privacy/deletion checks, and validation pilot; freeze evaluation protocol |
-| Weeks 11-12 | Held-out evaluation, baseline comparison, failure analysis, and reliability fixes |
-| Weeks 13-14 | Reproduce clean setup, finalize results and limitations, and prepare report and demonstration |
+| Period                                      | Deliverable                                                                                                                                          |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Weeks 1-2 / Milestone 1                     | Proposal, scope, preliminary product review, team roles, and rubric verification; confirm sponsor-code access and data permissions before collection |
+| Weeks 3-5 / first implementation checkpoint | Consented sample sequence, transcript import, task extraction, persistence, editable UI, and initial audio integration                               |
+| Weeks 6-8                                   | Cross-meeting reconciliation, review/undo, person/project views, and citation-based search                                                           |
+| Weeks 9-10                                  | Suggested deadline plans, meeting brief, privacy/deletion checks, and validation pilot; freeze evaluation protocol                                   |
+| Weeks 11-12                                 | Held-out evaluation, baseline comparison, failure analysis, and reliability fixes                                                                    |
+| Weeks 13-14                                 | Reproduce clean setup, finalize results and limitations, and prepare report and demonstration                                                        |
 
 Week numbers describe proposed project phases, not verified course dates. Confirm the official milestone schedule before assigning calendar deadlines.
 
@@ -230,27 +228,27 @@ Run a small pilot first, measure cost per audio hour and per reconciliation/ques
 
 ## 10. Risks and Mitigations
 
-| Risk | Response |
-|---|---|
-| Incorrect speaker assignment gives a task to the wrong person | Confirm speaker mappings, preserve unknown identities, and evaluate owner attribution separately. |
-| Similar tasks are incorrectly merged or completed | Require project/owner/evidence consistency; review ambiguity and prioritize update precision. |
-| Silence or partial progress is mistaken for completion | Require explicit supported state changes; include negative and partial-completion fixtures. |
-| Summaries or cleanup invent meaning | Preserve raw segments, attach evidence, and manually score faithfulness. |
-| Too little longitudinal data | Purpose-record linked scenarios and clearly separate controlled results from natural-meeting results. |
-| Audio integration delays the central contribution | Start with timestamped transcript imports while maintaining an audio-to-task final demo requirement. |
-| The proposal duplicates existing products | Compare documented capabilities honestly and emphasize measurable reconciliation behavior. |
-| Scope exceeds the available term | Prioritize the three-meeting task lifecycle; defer external integrations, slides, and native capture. |
+| Risk                                                          | Response                                                                                              |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Incorrect speaker assignment gives a task to the wrong person | Confirm speaker mappings, preserve unknown identities, and evaluate owner attribution separately.     |
+| Similar tasks are incorrectly merged or completed             | Require project/owner/evidence consistency; review ambiguity and prioritize update precision.         |
+| Silence or partial progress is mistaken for completion        | Require explicit supported state changes; include negative and partial-completion fixtures.           |
+| Summaries or cleanup invent meaning                           | Preserve raw segments, attach evidence, and manually score faithfulness.                              |
+| Too little longitudinal data                                  | Purpose-record linked scenarios and clearly separate controlled results from natural-meeting results. |
+| Audio integration delays the central contribution             | Start with timestamped transcript imports while maintaining an audio-to-task final demo requirement.  |
+| The proposal duplicates existing products                     | Compare documented capabilities honestly and emphasize measurable reconciliation behavior.            |
+| Scope exceeds the available term                              | Prioritize the three-meeting task lifecycle; defer external integrations, slides, and native capture. |
 
 ## 11. Milestone 1 Readiness and Requested Feedback
 
 ### Draft completed
 
-- [x] Two-paragraph explanation and motivation
-- [x] Defined terms, user story, scope, and architecture
-- [x] Measurable AI outputs, baselines, annotation plan, and provisional targets
-- [x] Preliminary related work and sourced product positioning
-- [x] Data, consent, licensing, ethics, and deletion plan
-- [x] Proposed ownership, timeline, budget, and risks
+- [X] Two-paragraph explanation and motivation
+- [X] Defined terms, user story, scope, and architecture
+- [X] Measurable AI outputs, baselines, annotation plan, and provisional targets
+- [X] Preliminary related work and sourced product positioning
+- [X] Data, consent, licensing, ethics, and deletion plan
+- [X] Proposed ownership, timeline, budget, and risks
 
 ### Before submission
 
