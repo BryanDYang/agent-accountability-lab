@@ -1,6 +1,24 @@
-# Contributing to agent-accountability-lab
+# Contributing to ai-capstone
 
-Thank you for your interest in contributing. This document covers the current planning-phase workflow.
+This document covers development of the meeting follow-through assistant.
+
+## Development setup
+
+Install Python 3.12 and uv, then run:
+
+```bash
+git clone https://github.com/BryanDYang/ai-capstone.git
+cd ai-capstone
+uv sync --locked --extra dev
+uv run labsync status
+uv run ruff check src tests
+uv run ruff format --check src tests
+uv run pytest
+```
+
+Tests run offline without API keys. Keep real meeting artifacts and participant
+data outside the repository. See [upstream provenance](docs/upstream.md) before
+copying code from the professor's reference project.
 
 ## Table of Contents
 

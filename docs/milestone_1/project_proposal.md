@@ -8,6 +8,8 @@
 
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 
+**Repository:** [github.com/BryanDYang/ai-capstone](https://github.com/BryanDYang/ai-capstone)
+
 **Status:** Working proposal for the new project direction
 
 **Updated:** September 11, 2026
@@ -274,6 +276,6 @@ Run a small pilot first, measure cost per audio hour and per reconciliation/ques
 - [ ] Confirm team roles and review the new direction with teaching staff.
 - [ ] Confirm access and permitted reuse of the sponsor's code, or commit to the independent pipeline.
 - [ ] Confirm recording participants and institutional data requirements before collection.
-- [ ] Create any pitch deck and combined PDF required by the official rubric.
+- [ ] Finalize the pitch artifact (a deck of six slides or fewer, or a 3-5 minute concept video) and assemble the required single PDF submission.
 
 Requested teaching-staff feedback: Is longitudinal commitment reconciliation an appropriate central contribution? Is the proposed small sequence dataset sufficient for the intended claims? Is independent per-meeting extraction the right primary baseline? Should audio processing remain required, or can the sponsor pipeline serve as an upstream component? Are pre-recorded advisor/student meeting sequences with tasks and deadlines available?
