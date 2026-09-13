@@ -127,18 +127,6 @@ The following AI Engineering focus areas best represent the technical work plann
 - **Retrieval-Augmented Generation:** Decision-ledger plus lexical/dense retrieval for historical Q&A.
 - **Tool use/orchestration:** Coordinate transcript ingestion, structured extraction, persistent-state retrieval, reconciliation, evidence validation, and historical retrieval as separate stages of the application pipeline.
 
-**Application and deployment**
-
-- Command-line interface.
-- Local-first, single-user deployment.
-
-**Evaluation and responsible AI**
-
-- Custom evaluation suite beyond the baseline harness.
-- Robustness testing for ambiguous references, negation, partial completion, uncertain speakers, and related edge cases.
-- Safety and hallucination checks, including attribution hallucination and unsupported claims.
-- Latency, token usage, and cost profiling.
-
 Bias analysis is not currently selected as a primary evaluation focus because the pilot-scale, purpose-recorded dataset is not large or diverse enough to support meaningful demographic bias claims. We will revisit this if the evaluation dataset grows substantially.
 
 ## 6. Architecture and AI Engineering

@@ -48,26 +48,27 @@
 
 ## What got done
 
-- Met with the professor and TA twice to discuss the project direction, scope, and next steps.
-- Prepared a new proposal for a meeting follow-through assistant that tracks commitments, suggestions, and decisions across research meetings.
-- Received approval for the new project direction.
-- Continued refining the proposal, including the MVP scope, evaluation plan, team responsibilities, and data-handling requirements.
-- Worked on the pitch deck to present the new project and its proposed workflow.
-- Set up the repository for the new direction with an installable Python CLI scaffold, locked dependencies, updated setup documentation, and a GitHub Actions smoke-test workflow. All three CLI tests, lint, and formatting checks passed locally.
-- Reviewed `agent-sandbox` as a reference for packaging, dependency management, and offline testing. It is a simulation framework; access to the separate meeting-artifact pipeline still needs confirmation.
+- Met with the professor and TA twice to discuss the revised project direction and received approval to proceed with a research meeting follow-through assistant.
+- Updated the [Milestone 1 proposal](milestone_1/project_proposal.md) from the team's Word submission draft, covering the project charter, MVP, architecture, evaluation plan, responsible use, roles, timeline, and $75 planning budget.
+- Clarified that proactive follow-through is a required MVP capability based on the professor discussion. Added scheduled reminders for outstanding commitments, user-configured delivery, cancellation and rescheduling after task changes, and corresponding evaluation and demo requirements.
+- Revised the six-slide [pitch deck](milestone_1/pitch_deck.pptx) to emphasize follow-through between meetings, show reminder and completion examples, and align its scope with the proposal.
+- Drafted the Milestone 2 evaluation-harness checkpoint with task owners: one synthetic three-meeting sequence, expected task states, an independent-meeting extraction baseline, and an offline scorer checked against correct and deliberately incorrect outputs.
+- Set up the repository with an installable Python CLI scaffold, locked dependencies, setup and contribution documentation, and a GitHub Actions smoke-test workflow. The application remains a scaffold; meeting processing and reminder delivery are not implemented yet.
+- Reviewed the professor's `agent-sandbox` as a reference for packaging, dependency management, and offline testing, and documented its provenance. It is a simulation framework, separate from the meeting-artifact pipeline.
+- Checked the submission against the Milestone 1 assignment. Confirmed the six-slide limit, required proposal sections, repository files, GitHub issue labels, and successful hosted CI runs. All three local CLI tests, lint, and formatting checks passed.
 
 ## Planned next steps
 
-- Finish the proposal and pitch deck for the Milestone 1 submission.
-- Assemble the required submission PDF and include the repository URL and this weekly check-in.
-- Confirm the proposed next-milestone ownership: Will for transcript/task contracts and extraction, Bryan for CLI/import integration, and Guadalupe for fixtures, annotations, and evaluation.
-- Prepare one synthetic three-meeting development sequence with expected commitments, owners, source references, and task states after each meeting.
-- Build the initial evaluation scorer and verify it against known correct and deliberately incorrect outputs before running the first extraction baseline.
-- Confirm reusable sponsor components and the meeting-artifact format; begin with timestamped transcript imports while audio integration is being clarified.
+- Replace the remaining project-name placeholders, assemble the proposal and pitch slides into the required single PDF, visually review the export, and confirm the Canvas deadline.
+- Confirm the proposed next-milestone assignments: Will for transcript/task contracts and extraction, Bryan for CLI/import integration and the evaluation runner, and Guadalupe for fixtures, annotations, and evaluation design.
+- Prepare and review the first synthetic three-meeting development sequence, including completion, a changed deadline, an unaccepted suggestion, an ambiguous reference, and a task not mentioned again.
+- Implement the transcript/task contract, independent-meeting extraction baseline, and offline scorer. Record the model and prompt versions and keep live API calls separate from CI.
+- Confirm access to reusable sponsor components and the meeting-artifact format; start with timestamped transcript imports while audio integration is clarified.
+- Select the initial follow-up delivery channel, scheduling defaults, supported OS, and calendar integration, then run a small model quality/cost pilot.
 
 ## Current blockers and dependencies
 
-- **Meeting-pipeline access:** `agent-sandbox` does not establish access to the recording/transcription pipeline. Confirm the artifact format and permitted reuse; synthetic timestamped transcripts allow development to proceed meanwhile.
-- **Evaluation ground truth:** We still need a shared annotation guide and expected task states. Start with one small development sequence and resolve disagreements before expanding the dataset.
-- **Model and operating assumptions:** Select a model after a small quality/cost pilot, and confirm the initial OS and calendar integration. Keep API calls out of the offline CI smoke tests.
-- **Submission readiness:** Finish the proposal/deck consistency review and PDF packaging. Verify a successful hosted CI run and repository issue labels before submission; local checks alone do not confirm GitHub configuration.
+- **Meeting-pipeline and data access:** Access and permitted reuse of the sponsor's recording/transcription pipeline and any pre-recorded research-meeting sequences still need confirmation. Synthetic transcripts allow initial development to proceed.
+- **Evaluation ground truth:** The annotation guide, labeled sequence, and scorer are planned but not yet implemented. The pilot dataset will support limited claims; broader evaluation depends on additional independent sequences.
+- **Integration choices:** The first reminder delivery channel, OS/calendar integration, and model remain open decisions. Follow-up must work from validated task state and user-enabled settings.
+- **Submission packaging:** A final combined PDF and project name are still needed. The deck passed structural checks, but its visual verification remains incomplete because the preview export failed.
